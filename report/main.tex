@@ -1,0 +1,69 @@
+% ===================================== SET YOUR DETAILS HERE ==========================================
+\def\myStudId{Beeg Number (ID)}
+\def\myTitle{The (Un)official Template for Smart Stuff}
+\def\mySubtitle{Use this to show off your Big Brain}
+\def\myDateToday{Three smol numbers (Date)}
+\def\myParIndent{2em}
+\def\myMarginLeft{35mm}
+\def\myMarginRight{35mm}
+\def\myHeader{30mm}
+\def\myFooter{40mm}
+% ======================================================================================================
+
+
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{parskip}
+\usepackage{palatino}
+\usepackage[backend=biber, style=ieee]{biblatex}
+\addbibresource{res/refs.bib}
+\usepackage{blindtext}
+\usepackage{geometry}
+\usepackage{csvsimple}
+\usepackage{multicol}
+\usepackage{minted}
+ \geometry{
+     left=\myMarginLeft,
+     right=\myMarginRight,
+     top=\myHeader,
+     bottom=\myFooter
+}
+\setlength\parindent{\myParIndent}
+\newcommand{\betterapdx}[1]{%
+  \section*{#1}%
+  \markright{}%
+  \addcontentsline{toc}{section}{#1}%
+}
+\newcommand{\tab}{
+    \hspace{\myParIndent}
+}
+
+\title{\includegraphics[width=5cm]{res/logo.png}\\[1cm] 
+\textbf{\Huge{\myTitle}\\}
+\huge\mySubtitle}
+
+\author{Student ID: \myStudId}
+\date{\myDateToday}
+
+\begin{document}
+
+\maketitle
+\pagebreak
+\tableofcontents
+\pagebreak
+\input{sections/Introduction}
+
+% Use the input control sequence to add instructions from files. Examples are provided in the Intro File
+% \input{sections/Part1}
+% \input{sections/Part2}
+% \input{sections/Part3}
+
+\input{sections/conclusion}
+\newpage
+\section*{\Large Appendices}
+\input{sections/appendices}
+\newpage
+\nocite{*}
+% To add bibliography items, use the res/refs.bib file. Bibliography entries are formatted in the bibtex format
+\printbibliography
+\end{document}
