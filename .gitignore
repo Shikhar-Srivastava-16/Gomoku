@@ -1,6 +1,7 @@
 dist
 dist-*
 dist-newstyle/*
+dist-newstyle
 dist/*
 cabal-dev
 *.o
