@@ -19,12 +19,12 @@ type Position = (Int, Int)
 
 data Board = Board { size :: Int,
                      target :: Int,
-                     pieces :: [(Position, Col)]
-                   }
+                     wPieces :: [(Float, Float)],
+                     bPieces :: [(Float, Float)] }
   deriving Show
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = Board 6 3 []
+initBoard = Board 6 3 [(50,50), (100,100), (-50,50)] [(-50,-50), (0,0)]
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
