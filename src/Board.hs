@@ -7,7 +7,7 @@ other :: Col -> Col
 other Black = White
 other White = Black
 
-type Position = (Int, Int)
+type Position = (Float, Float)
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list 
@@ -15,16 +15,28 @@ type Position = (Int, Int)
 -- for a game of 5 in a row with a black piece at 5,5 and a white piece at 8,7
 -- would be represented as:
 --
--- Board 10 5 [((5, 5), Black), ((8,7), White)]
+-- Board 10 5 [((5, 5), Black), ((8,7), White)]     NOTE: NO
 
-data Board = Board { size :: Int,
+data Board = Board { tileSize :: Int,
+                     size :: Int,
                      target :: Int,
-                     wPieces :: [(Float, Float)],
-                     bPieces :: [(Float, Float)] }
+                     buttonLoci :: [Position],
+                     wPieces :: [Position],
+                     bPieces :: [Position] }
   deriving Show
 
+btloci :: Float -> Float -> [Position]
+btloci bDims tSize = do
+  let a = (bDims / 2) * tSize
+  let bs = [(-1 * a), (tSize - a)..a] where a = bDims * 0.5 * tSize
+  [ (x, y) | x <- bs, y <- bs ]
+
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = Board 6 3 [(50,50), (100,100), (-50,50)] [(-50,-50), (0,0)]
+initBoard = do
+  let bDimension = 6
+  let tileSize = 50
+  let target = 3
+  Board tileSize bDimension target (btloci (fromIntegral bDimension) (fromIntegral tileSize)) [(50,50), (100,100), (-50,50)] [(-50,-50), (0,0)]
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -34,7 +46,9 @@ initBoard = Board 6 3 [(50,50), (100,100), (-50,50)] [(-50,-50), (0,0)]
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 data World = World { board :: Board,
-                     turn :: Col }
+                     turn :: Col
+                    --  buttons :: [Position]    mayhap? 
+                     }
 
 initWorld = World initBoard Black
 

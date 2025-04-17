@@ -14,8 +14,12 @@ drawWorld w = do
     Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
  
 drawGrid tSize bDims wPieces bPieces = do
+    -- bs is a list of points
     let bs = [(-1 * a), (tSize - a)..a] where a = bDims * 0.5 * tSize
+    -- con is first thing in bs
     let con = bs !! 0
+    -- loci are all the lines - specifically, a list of lists 
+    -- inner list is two points which are extreme ends of each line
     let loci = [[(con, b), (-1 * con, b)] | b <- bs]++[[(b, con), (b, -1 * con)] | b <- bs]
     let wPics = [ translate xi yi (Color white $ circleSolid $ tSize * 0.4) | (xi, yi) <- wPieces]
     let bPics = [ translate xi yi (Color yellow $ circleSolid $ tSize * 0.4) | (xi, yi) <- bPieces]

@@ -7,6 +7,25 @@ import AI
 
 import Debug.Trace
 
+-- functions for snapping
+
+coordSnap w coord = rndAdv ( toInteger $ tileSize $ board w ) coord
+
+clickSnap :: World -> (Integer, Integer) -> (Integer, Integer)
+clickSnap w (xCoord, yCoord) = ((coordSnap w (toInteger xCoord)), (coordSnap w (toInteger yCoord)))
+
+rndAdv :: Integer -> Integer -> Integer
+rndAdv target input
+    | input >= 0 = rnd target input
+    | input < 0 = (-1) * (rnd target (input * (-1)))
+
+rnd :: Integer -> Integer -> Integer 
+rnd target input = do
+    let temp = rem input target
+    if (temp < div target 2) 
+        then (input - temp)
+        else (input + 50 - temp)
+
 -- Update the world state given an input event. Some sample input events
 -- are given; when they happen, there is a trace printed on the console
 --
@@ -14,14 +33,17 @@ import Debug.Trace
 -- 'trace' returns its second argument while printing its first argument
 -- to stderr, which can be a very useful way of debugging!
 handleInput :: Event -> World -> World
-handleInput (EventMotion (x, y)) b 
-    = trace ("Mouse moved to: " ++ show (x,y)) b
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) b 
-    = trace ("Left button pressed at: " ++ show (x,y)) b
-handleInput (EventKey (Char k) Down _ _) b
-    = trace ("Key " ++ show k ++ " down") b
-handleInput (EventKey (Char k) Up _ _) b
-    = trace ("Key " ++ show k ++ " up") b
+-- handleInput (EventMotion (x, y)) b 
+--     = trace ("Mouse moved to: " ++ show (x,y)) b
+handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w 
+    = do
+        let snapped = clickSnap w (round x, round y)
+        let a = trace ("Snap " ++ show x ++ "," ++ show y) ()
+        trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ (show snapped ) ) w
+-- handleInput (EventKey (Char k) Down _ _) b
+--     = trace ("Key " ++ show k ++ " down") b
+-- handleInput (EventKey (Char k) Up _ _) b
+--     = trace ("Key " ++ show k ++ " up") b
 handleInput e b = b
 
 {- Hint: when the 'World' is in a state where it is the human player's
