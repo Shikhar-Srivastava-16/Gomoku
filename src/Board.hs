@@ -1,4 +1,5 @@
 module Board where
+import Debug.Trace
 
 data Col = Black | White
   deriving Show
@@ -33,10 +34,10 @@ btloci bDims tSize = do
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard = do
-  let bDimension = 6
+  let bDimension = 6            -- 1 less than the actual dimension on the board
   let tileSize = 50
   let target = 3
-  Board tileSize bDimension target (btloci (fromIntegral bDimension) (fromIntegral tileSize)) [(50,50), (100,100), (-50,50)] [(-50,-50), (0,0)]
+  Board tileSize bDimension target (btloci (fromIntegral bDimension) (fromIntegral tileSize)) [] []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -46,22 +47,27 @@ initBoard = do
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 data World = World { board :: Board,
-                     turn :: Col
-                    --  buttons :: [Position]    mayhap? 
-                     }
+                     turn :: Col }
 
 initWorld = World initBoard Black
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
-makeMove = undefined
+-- TODO: Validate :
+--                Invalid if position not in buttonLoci               :: trying to place something off the board
+--                else Invalid if position in wPieces                 :: trying to place something where there is already a piece
+--                else Invalid if position in bPieces                 :: trying to place something where there is already a piece
+makeMove oldBoard curTurn newPosition = do
+  case curTurn of
+    Black -> Just $ Board (tileSize oldBoard) (size oldBoard) (target oldBoard) (buttonLoci oldBoard) (wPieces oldBoard) ((bPieces oldBoard) ++ [newPosition])
+    White -> Just $ Board (tileSize oldBoard) (size oldBoard) (target oldBoard) (buttonLoci oldBoard) ((wPieces oldBoard) ++ [newPosition]) (bPieces oldBoard)
 
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
 checkWon :: Board -> Maybe Col
-checkWon = undefined
+checkWon board = trace "checking" (Just Black)
 
 {- Hint: One way to implement 'checkWon' would be to write functions 
 which specifically check for lines in all 8 possible directions

@@ -8,7 +8,6 @@ import AI
 import Debug.Trace
 
 -- functions for snapping
-
 coordSnap w coord = rndAdv ( toInteger $ tileSize $ board w ) coord
 
 clickSnap :: World -> (Integer, Integer) -> (Integer, Integer)
@@ -26,6 +25,9 @@ rnd target input = do
         then (input - temp)
         else (input + 50 - temp)
 
+first (a,b) = a
+second (a,b) = b
+
 -- Update the world state given an input event. Some sample input events
 -- are given; when they happen, there is a trace printed on the console
 --
@@ -38,14 +40,15 @@ handleInput :: Event -> World -> World
 handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w 
     = do
         let snapped = clickSnap w (round x, round y)
-        let a = trace ("Snap " ++ show x ++ "," ++ show y) ()
-        trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ (show snapped ) ) w
+        let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
+        case newBoard of
+            Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") World b (other $ turn w)
+            Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") World (board w) (other $ turn w)
 -- handleInput (EventKey (Char k) Down _ _) b
 --     = trace ("Key " ++ show k ++ " down") b
 -- handleInput (EventKey (Char k) Up _ _) b
 --     = trace ("Key " ++ show k ++ " up") b
 handleInput e b = b
-
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
  a click refers to, and update the board accordingly.
