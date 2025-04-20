@@ -35,7 +35,7 @@ btloci bDims tSize = do
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard = do
-  let bDimension = 6            -- 1 less than the actual dimension on the board
+  let bDimension = 5            -- 1 less than the actual dimension on the board
   let tileSize = 50
   let target = 3
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
