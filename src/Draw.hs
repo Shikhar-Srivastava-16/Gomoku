@@ -2,6 +2,7 @@ module Draw(drawWorld) where
 
 import Graphics.Gloss
 import Board
+import qualified Data.Set as Set
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
@@ -11,7 +12,7 @@ import Board
 drawWorld :: World -> Picture
 drawWorld w = do
     let bDims = fromIntegral $ size $ board w
-    Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
+    Pictures $ drawGrid 50 bDims (Set.toList $ wPieces $ board w) (Set.toList $ bPieces $ board w)
  
 drawGrid tSize bDims wPieces bPieces = do
     -- bs is a list of points

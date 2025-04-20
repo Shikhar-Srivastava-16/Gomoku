@@ -7,8 +7,7 @@ data GameTree = GameTree { game_board :: Board,
                            next_moves :: [(Position, GameTree)] }
 
 gen :: Board -> Col -> [Position]
-gen board curTurn = do
-  let list = buttonLoci board
+gen board curTurn = buttonLoci board
 
 -- Given a function to generate plausible moves (i.e. board positions)
 -- for a player (Col) on a particular board, generate a (potentially)

@@ -97,7 +97,7 @@ hasWon board col =
       in if checkPos `Set.member` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
          else count
-  in any (\pos -> any (checkLine pos) directions) (Set.toList pieces)
+  in any (\pos -> any (shouldCheckLine pos) directions) (Set.toList pieces)
 {- In these functions:
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:
