@@ -8,15 +8,23 @@ import AI
 import Debug.Trace
 
 -- functions for snapping
-coordSnap w coord = rndAdv ( toInteger $ tileSize $ board w ) coord
+coordSnap w coord = rndAdv ( size $ board w ) ( toInteger $ tileSize $ board w ) coord
 
 clickSnap :: World -> (Integer, Integer) -> (Integer, Integer)
 clickSnap w (xCoord, yCoord) = ((coordSnap w (toInteger xCoord)), (coordSnap w (toInteger yCoord)))
 
-rndAdv :: Integer -> Integer -> Integer
-rndAdv target input
-    | input >= 0 = rnd target input
-    | input < 0 = (-1) * (rnd target (input * (-1)))
+rndAdv :: Int -> Integer -> Integer -> Integer
+rndAdv size target input = do
+
+    if (even size)
+        then do
+            if (input >= 0) 
+                then rnd target input
+                else ( (-1) * (rnd target ( input * (-1) ) ) )
+        else do
+            if (input >= 0) 
+                then (rnd target (input + 25) -25 )
+                else ( (-1) * ( rnd target ( ( input * (-1) ) + 25 ) -25 ) )
 
 rnd :: Integer -> Integer -> Integer 
 rnd target input = do
