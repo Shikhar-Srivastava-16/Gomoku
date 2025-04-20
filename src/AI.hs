@@ -6,6 +6,10 @@ data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
                            next_moves :: [(Position, GameTree)] }
 
+gen :: Board -> Col -> [Position]
+gen board curTurn = do
+  let list = buttonLoci board
+
 -- Given a function to generate plausible moves (i.e. board positions)
 -- for a player (Col) on a particular board, generate a (potentially)
 -- infinite game tree.
