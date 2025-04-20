@@ -38,7 +38,7 @@ initBoard = do
   let bDimension = 6            -- 1 less than the actual dimension on the board
   let tileSize = 50
   let target = 3
-  Board tileSize bDimension target (btloci (fromIntegral bDimension) (fromIntegral tileSize)) [] []
+  Board tileSize bDimension target (btloci (fromIntegral bDimension) (fromIntegral tileSize)) (Set.fromList []) (Set.fromList [])
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -90,14 +90,14 @@ hasWon board col =
     targetCount = target board
 
     directions = [(0,1), (1,0), (1,1), (0,-1), (1,-1), (-1,-1), (-1,0), (-1,1)]
-    shouldCheckLine position directionToCheck = countLine pos dir 1 >= targetCount
+    shouldCheckLine position directionToCheck = countLine position directionToCheck 1 >= targetCount
 
     countLine (x, y) (xoffset, yoffset) count =
       let checkPos = (x + xoffset, y + yoffset)
       in if checkPos `Set.member` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
          else count
-  in any (\pos -> any (hasLine pos) directions) (Set.toList pieces)
+  in any (\pos -> any (checkLine pos) directions) (Set.toList pieces)
 {- In these functions:
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:
