@@ -51,7 +51,6 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 updateWorld t w = do
-  traceM ("Boo")
   let won = trace ("Checking") checkWon $ board w
   case won of
     Nothing -> trace("No Win") w
