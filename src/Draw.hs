@@ -23,5 +23,5 @@ drawGrid tSize bDims wPieces bPieces = do
     -- inner list is two points which are extreme ends of each line
     let loci = [[(con, b), (-1 * con, b)] | b <- bs]++[[(b, con), (b, -1 * con)] | b <- bs]
     let wPics = [ translate xi yi (Color white $ circleSolid $ tSize * 0.4) | (xi, yi) <- wPieces]
-    let bPics = [ translate xi yi (Color yellow $ circleSolid $ tSize * 0.4) | (xi, yi) <- bPieces]
+    let bPics = [ translate xi yi (Color black $ circleSolid $ tSize * 0.4) | (xi, yi) <- bPieces]
     [ Color white $ Line locus | locus <- loci ] ++ wPics ++ bPics

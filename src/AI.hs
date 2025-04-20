@@ -3,6 +3,7 @@ module AI where
 import Lists
 import Board
 import Debug.Trace
+import qualified Data.Set as Set
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
@@ -11,12 +12,13 @@ data GameTree = GameTree { game_board :: Board,
 -- type generationFunction = Board -> Col -> [Position]
 
 gen :: Board -> Col -> [Position] 
-gen board curTurn = do
-  let list = buttonLoci board
-  let toRem1 = wPieces board
-  let toRem2 = bPieces board
-  -- remove blacks and whites from main list for all possible moves
-  removeAll (removeAll list toRem2) toRem1
+gen board curTurn = []
+-- do
+--   let list = buttonLoci board
+--   let toRem1 = Set.toList $ wPieces board
+--   let toRem2 = Set.toList $ bPieces board
+--   -- remove blacks and whites from main list for all possible moves
+--   removeAll (removeAll list toRem2) toRem1
 
 -- Given a function to generate plausible moves (i.e. board positions)
 -- for a player (Col) on a particular board, generate a (potentially)
@@ -52,15 +54,14 @@ buildTree gen b c = let moves = gen b c in -- generated moves
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
-getBestMove = undefined
+getBestMove depth tree = (125.0, 125.0)
 
 -- Update the world state after some time has passed
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 updateWorld t w = do 
-  -- let generator = gen (board w) (turn w)
-  let newPos = getBestMove 1 (buildTree (gen) (board w) (turn w))
+  let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
   -- now make new board
   let newBoard = makeMove (board w) (turn w) newPos
   case newBoard of
