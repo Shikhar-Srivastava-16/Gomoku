@@ -85,19 +85,19 @@ hasWon :: Board -> Col -> Bool
 hasWon board col =
   let
     pieces = case col of
-              White -> wPieces board
-              Black -> bPieces board
+              White -> wPieces $ trace ("Checking white") board
+              Black -> bPieces $ trace ("Checking black") board
     targetCount = target board
 
-    directions = [(0,1), (1,0), (1,1), (0,-1), (1,-1), (-1,-1), (-1,0), (-1,1)]
+    directions = [(-50,-50), (-50,0), (-50,50), (0,-50), (0,50), (50,-50), (50,0), (50,50)]
     shouldCheckLine position directionToCheck = countLine position directionToCheck 1 >= targetCount
 
     countLine (x, y) (xoffset, yoffset) count =
-      let checkPos = (x + xoffset, y + yoffset)
+      let checkPos = trace ("checking neighbour" ++ show (x+xoffset) ++ ", " ++ show (y+yoffset)) (x + xoffset, y + yoffset)
       in if checkPos `Set.member` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
-         else count
-  in any (\pos -> any (shouldCheckLine pos) directions) (Set.toList pieces)
+         else trace ("neighbour not same col circle, returning count: " ++ show count) count
+  in any (\pos -> any (shouldCheckLine (trace ("Position: " ++ show pos) pos)) directions) (Set.toList pieces)
 {- In these functions:
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:
