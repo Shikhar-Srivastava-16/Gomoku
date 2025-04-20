@@ -1,5 +1,6 @@
 module AI where
 
+import Lists
 import Board
 import Debug.Trace
 
@@ -7,9 +8,15 @@ data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
                            next_moves :: [(Position, GameTree)] }
 
-gen :: Board -> Col -> [Position]
+-- type generationFunction = Board -> Col -> [Position]
+
+gen :: Board -> Col -> [Position] 
 gen board curTurn = do
   let list = buttonLoci board
+  let toRem1 = wPieces board
+  let toRem2 = bPieces board
+  -- remove blacks and whites from main list for all possible moves
+  removeAll (removeAll list toRem2) toRem1
 
 -- Given a function to generate plausible moves (i.e. board positions)
 -- for a player (Col) on a particular board, generate a (potentially)
@@ -52,7 +59,8 @@ updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
 updateWorld t w = do 
-  let newPos = getBestMove 0 ()
+  -- let generator = gen (board w) (turn w)
+  let newPos = getBestMove 1 (buildTree (gen) (board w) (turn w))
   -- now make new board
   let newBoard = makeMove (board w) (turn w) newPos
   case newBoard of
