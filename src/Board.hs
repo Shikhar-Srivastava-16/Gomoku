@@ -60,14 +60,18 @@ makeMove :: Board -> Col -> Position -> Maybe Board
 --                else Invalid if position in wPieces                 :: trying to place something where there is already a piece
 --                else Invalid if position in bPieces                 :: trying to place something where there is already a piece
 makeMove oldBoard curTurn newPosition = do
-  if not (newPosition `elem` buttonLoci oldBoard) then
-    Nothing -- Position is not a valid board spot
-  else if newPosition `Set.member` wPieces oldBoard || newPosition `Set.member` bPieces oldBoard then
-    Nothing -- Position already taken by another piece
-  else
-    case curTurn of
-      Black -> Just $ oldBoard { bPieces = Set.insert newPosition (bPieces oldBoard) }
-      White -> Just $ oldBoard { wPieces = Set.insert newPosition (wPieces oldBoard) }
+  case checkWon oldBoard of
+    Just Black -> error "Bl Won"
+    Just White -> error "Wh Won"
+    Nothing -> do
+        if not (newPosition `elem` buttonLoci oldBoard) then
+          Nothing -- Position is not a valid board spot
+        else if newPosition `Set.member` wPieces oldBoard || newPosition `Set.member` bPieces oldBoard then
+          Nothing -- Position already taken by another piece
+        else
+          case curTurn of
+            Black -> Just $ oldBoard { bPieces = Set.insert newPosition (bPieces oldBoard) }
+            White -> Just $ oldBoard { wPieces = Set.insert newPosition (wPieces oldBoard) }
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
