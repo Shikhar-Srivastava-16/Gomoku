@@ -1,5 +1,6 @@
 module Board where
 import Debug.Trace
+import qualified Data.Set as Set
 
 data Col = Black | White
   deriving Show
@@ -11,8 +12,8 @@ other White = Black
 type Position = (Float, Float)
 
 -- A Board is a record containing the board size (a board is a square grid,
--- n * n), the number of pieces in a row required to win, and a list 
--- of pairs of position and the colour at that position.  So a 10x10 board 
+-- n * n), the number of pieces in a row required to win, and a list
+-- of pairs of position and the colour at that position.  So a 10x10 board
 -- for a game of 5 in a row with a black piece at 5,5 and a white piece at 8,7
 -- would be represented as:
 --
@@ -22,8 +23,8 @@ data Board = Board { tileSize :: Int,
                      size :: Int,
                      target :: Int,
                      buttonLoci :: [Position],
-                     wPieces :: [Position],
-                     bPieces :: [Position] }
+                     wPieces :: Set.Set Position,
+                     bPieces :: Set.Set Position }
   deriving Show
 
 btloci :: Float -> Float -> [Position]
@@ -59,21 +60,45 @@ makeMove :: Board -> Col -> Position -> Maybe Board
 --                else Invalid if position in wPieces                 :: trying to place something where there is already a piece
 --                else Invalid if position in bPieces                 :: trying to place something where there is already a piece
 makeMove oldBoard curTurn newPosition = do
-  case curTurn of
-    Black -> Just $ Board (tileSize oldBoard) (size oldBoard) (target oldBoard) (buttonLoci oldBoard) (wPieces oldBoard) ((bPieces oldBoard) ++ [newPosition])
-    White -> Just $ Board (tileSize oldBoard) (size oldBoard) (target oldBoard) (buttonLoci oldBoard) ((wPieces oldBoard) ++ [newPosition]) (bPieces oldBoard)
-
+  if not (newPosition `elem` buttonLoci oldBoard) then
+    Nothing -- Position is not a valid board spot
+  else if newPosition `Set.member` wPieces oldBoard || newPosition `Set.member` bPieces oldBoard then
+    Nothing -- Position already taken by another piece
+  else
+    case curTurn of
+      Black -> Just $ oldBoard { bPieces = Set.insert newPosition (bPieces oldBoard) }
+      White -> Just $ oldBoard { wPieces = Set.insert newPosition (wPieces oldBoard) }
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
 checkWon :: Board -> Maybe Col
-checkWon board = trace "checking" (Just Black)
+checkWon board =
+  if hasWon board White then Just White
+  else if hasWon board Black then Just Black
+  else Nothing
 
-{- Hint: One way to implement 'checkWon' would be to write functions 
+{- Hint: One way to implement 'checkWon' would be to write functions
 which specifically check for lines in all 8 possible directions
-(NW, N, NE, E, W, SE, SW)
+(NW, N, NE, E, W, SE, SW) -}
 
-In these functions:
+hasWon :: Board -> Col -> Bool
+hasWon board col =
+  let
+    pieces = case col of
+              White -> wPieces board
+              Black -> bPieces board
+    targetCount = target board
+
+    directions = [(0,1), (1,0), (1,1), (0,-1), (1,-1), (-1,-1), (-1,0), (-1,1)]
+    shouldCheckLine position directionToCheck = countLine pos dir 1 >= targetCount
+
+    countLine (x, y) (xoffset, yoffset) count =
+      let checkPos = (x + xoffset, y + yoffset)
+      in if checkPos `Set.member` pieces
+         then countLine checkPos (xoffset, yoffset) (count + 1)
+         else count
+  in any (\pos -> any (hasLine pos) directions) (Set.toList pieces)
+{- In these functions:
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:
 - if n == 1, the colour 'col' has won
@@ -85,6 +110,3 @@ For every position ((x, y), col) in the 'pieces' list:
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
 evaluate = undefined
-
-
-
