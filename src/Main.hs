@@ -4,7 +4,7 @@ import Debug.Trace
 import Graphics.Gloss
 import System.Environment
 import Options.Applicative
-
+import Graphics.Gloss.Interface.IO.Game
 
 import Board
 import Draw
@@ -67,16 +67,20 @@ cliParser = CLIArgs
 main :: IO ()
 main = do
     composed <- execParser cliargs
-    play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
+    playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
         ( initWorld (argSize composed) (argTarget composed) )         -- in Board.hs
-        drawWorld               -- in Draw.hs
-        handleInput             -- in Input.hs
-        updateWorld             -- in AI.hs
-    if (switchSave composed) 
-        then putStrLn "NOPE"
-        else putStrLn "YEP"
+        drawIOWorld               -- in Draw.hs
+        handleInputIO             -- in Input.hs
+        updateWorldIO             -- in AI.hs
     where
         cliargs = info (cliParser <**> helper)
             ( fullDesc
            <> header "Starting up gomoku"
            <> progDesc "Gomoku: Five-in-a-row, written in haskell!" )
+
+
+drawIOWorld :: World -> IO Picture
+drawIOWorld w = return $ drawWorld w
+-- handleIOInput :: World -> World
+updateWorldIO :: Float -> World -> IO World
+updateWorldIO t w = return $ updateWorld t w

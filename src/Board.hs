@@ -1,5 +1,6 @@
 module Board where
 import Debug.Trace
+import Control.Monad (when)
 
 data Col = Black | White
   deriving Show
@@ -26,6 +27,8 @@ data Board = Board { tileSize :: Int,
                      bPieces :: [Position] }
   deriving Show
 
+
+
 btloci :: Float -> Float -> [Position]
 btloci bDims tSize = do
   let a = (bDims / 2) * tSize
@@ -39,6 +42,8 @@ initBoard bDim bTarg = do
   let target = bTarg
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
   Board tileSize bDimension target loci [] []
+
+
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -155,3 +160,7 @@ For every position ((x, y), col) in the 'pieces' list:
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
 evaluate = undefined
+
+-- saveWorld :: World -> String -> IO ()
+saveWorld w filePath =
+    writeFile "file.txt" "Boo\n"
