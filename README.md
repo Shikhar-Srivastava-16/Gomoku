@@ -24,3 +24,7 @@
  - Added adjustments for all sizes of board (Co-Authored by Jack)
  - graphics changed
  - More work on AI calls
+
+## Apr 21st
+### ss504
+ - added undo

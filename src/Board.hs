@@ -101,17 +101,27 @@ hasWon board col =
   in any (\pos -> any (shouldCheckLine pos) directions) (Set.toList pieces)
 
 undoTurn :: World -> World
-undoTurn w = do 
-{-- 
- - remove latest from both
- - so, newBs = init Bs
-       newWs = init Ws
- - --}
-  let curBoard = board w
-  let nBs = Set.fromList $ init $ Set.toList $ bPieces curBoard
-  let nWs = Set.fromList $ init $ Set.toList $ wPieces curBoard
+undoTurn w = undefined
 
-  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w)
+undoRound :: World -> World
+undoRound w = do 
+  {-- 
+  - remove latest from both
+  - so, newBs = init Bs
+       newWs = init Ws
+  --}
+  let curBoard = board w
+  let oBs = Set.toList $ bPieces curBoard
+  let oWs = Set.toList $ wPieces curBoard
+  let nBs = if (oBs == [])
+               then oBs
+               else init oBs 
+   
+  let nWs = if (oWs == [])
+               then oWs
+               else init oWs 
+
+  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (Set.fromList nWs) (Set.fromList nBs) ) (turn w)
 
 {- In these functions:
 To check for a line of n in a row in a direction D:

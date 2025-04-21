@@ -55,9 +55,13 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
 -- handleInput (EventKey (Char k) Down _ _) b
 --     = trace ("Key " ++ show k ++ " down") b
 handleInput (EventKey (Char 'u') Up _ _) w
-    = trace ("Key " ++ show 'u' ++ " up") $ undoTurn w
+    = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ undoRound w
 
--- other inputs
+handleInput (EventKey (Char 'b') Up _ _) w
+    = trace ("Key " ++ show 'b' ++ " up: Undoing one from both") $ undoRound w
+
+
+-- other input events
 handleInput e b = b
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
