@@ -99,6 +99,20 @@ hasWon board col =
          then countLine checkPos (xoffset, yoffset) (count + 1)
          else count
   in any (\pos -> any (shouldCheckLine pos) directions) (Set.toList pieces)
+
+undoTurn :: World -> World
+undoTurn w = do 
+{-- 
+ - remove latest from both
+ - so, newBs = init Bs
+       newWs = init Ws
+ - --}
+  let curBoard = board w
+  let nBs = Set.fromList $ init $ Set.toList $ bPieces curBoard
+  let nWs = Set.fromList $ init $ Set.toList $ wPieces curBoard
+
+  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w)
+
 {- In these functions:
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:

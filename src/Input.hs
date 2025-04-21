@@ -54,8 +54,10 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
             Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") w
 -- handleInput (EventKey (Char k) Down _ _) b
 --     = trace ("Key " ++ show k ++ " down") b
--- handleInput (EventKey (Char k) Up _ _) b
---     = trace ("Key " ++ show k ++ " up") b
+handleInput (EventKey (Char 'u') Up _ _) w
+    = trace ("Key " ++ show 'u' ++ " up") $ undoTurn w
+
+-- other inputs
 handleInput e b = b
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
