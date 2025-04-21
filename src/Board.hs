@@ -100,9 +100,30 @@ hasWon board col =
          else count
   in any (\pos -> any (shouldCheckLine pos) directions) (Set.toList pieces)
 
+{-- 
+ - Check world turn
+ - black => change black piece set
+ - white => change white piece set
+--}
 undoTurn :: World -> World
-undoTurn w = undefined
+undoTurn w = do
+  let curBoard = board w
+  case (turn w) of
+    White -> do
+      let oBs = Set.toList $ bPieces curBoard    
+      let nBs = if (oBs == [])
+                then oBs
+                else init oBs
+      let nWs = Set.toList $ wPieces curBoard    
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (Set.fromList nWs) (Set.fromList nBs) ) (other $ turn w)
 
+    Black -> do 
+      let oWs = Set.toList $ wPieces curBoard    
+      let nWs = if (oWs == [])
+                then oWs
+                else init oWs
+      let nBs = Set.toList $ bPieces curBoard    
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (Set.fromList nWs) (Set.fromList nBs) ) (other $ turn w)
 undoRound :: World -> World
 undoRound w = do 
   {-- 

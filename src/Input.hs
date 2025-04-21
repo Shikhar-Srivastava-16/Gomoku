@@ -58,7 +58,7 @@ handleInput (EventKey (Char 'u') Up _ _) w
     = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ undoRound w
 
 handleInput (EventKey (Char 'b') Up _ _) w
-    = trace ("Key " ++ show 'b' ++ " up: Undoing one from both") $ undoRound w
+    = trace ("Key " ++ show 'b' ++ " up: Undoing one from current player") $ undoTurn w
 
 
 -- other input events
