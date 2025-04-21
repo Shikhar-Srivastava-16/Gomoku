@@ -43,41 +43,13 @@ second (a,b) = b
 -- 'trace' returns its second argument while printing its first argument
 -- to stderr, which can be a very useful way of debugging!
 
-
-{--
-handleInput :: Event -> World -> World
--- handleInput (EventMotion (x, y)) b 
---     = trace ("Mouse moved to: " ++ show (x,y)) b
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w 
-    = do
-        let snapped = clickSnap w (round x, round y)
-        let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
-        case newBoard of
-            Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") World b (other $ turn w)
-            Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") w
--- handleInput (EventKey (Char k) Down _ _)
---     = trace ("Key " ++ show k ++ " down") b
-handleInput (EventKey (Char 'u') Up _ _) w
-    = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ undoRound w
-
-handleInput (EventKey (Char 'b') Up _ _) w
-    = trace ("Key " ++ show 'b' ++ " up: Undoing one from current player") $ undoTurn w
-
-handleInput (EventKey (Char 's') Up _ _) w
-    = trace ("Key " ++ show 's' ++ " up: saving") w
-
--- other input events
-handleInput e b = b
---}
-
-
 handleInputIO :: Event -> World -> IO World
 handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w 
     = do
         let snapped = clickSnap w (round x, round y)
         let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
         case newBoard of
-            Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") (return $ World b (other $ turn w))
+            Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") (return $ World b (other $ turn w) (filePath w) )
             Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") (return w)
 handleInputIO (EventKey (Char 'u') Up _ _) w
     = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ return $ undoRound w
@@ -86,10 +58,11 @@ handleInputIO (EventKey (Char 'b') Up _ _) w
     = trace ("Key " ++ show 'b' ++ " up: Undoing one from current player") $ return $ undoTurn w
 handleInputIO (EventKey (Char 's') Up _ _) w
     = trace ("Key " ++ show 's' ++ " up: saving") $ do 
-                                                     a <- saveWorld w "foo"
+                                                     a <- saveWorld w (filePath w)
                                                      return w
 -- other input events
 handleInputIO e b = return b
+
 {- Hint: when the 'World' is in a state where it is the human player's
  turn to move, a mouse press event should calculate which board position
  a click refers to, and update the board accordingly.

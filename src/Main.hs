@@ -5,6 +5,7 @@ import Graphics.Gloss
 import System.Environment
 import Options.Applicative
 import Graphics.Gloss.Interface.IO.Game
+import System.Directory
 
 import Board
 import Draw
@@ -29,7 +30,8 @@ data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int, 
                          argSpd :: Int,
                          argAI :: Int,
-                         switchSave :: Bool }
+                         argSaveFile :: String,
+                         argLoadFilePath :: String }
 
 cliParser :: Parser CLIArgs
 cliParser = CLIArgs
@@ -59,16 +61,31 @@ cliParser = CLIArgs
             <> metavar "<WHICH AI>"
             <> value 0 -- NOTE: No AI by default TODO change later?
             <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
-         <*> switch
-             ( long "save"
-            <> short 'd' 
-            <> help "Whether or not the game gets saved" )
+         <*> strOption
+             ( long "filepath"
+            <> short 'f'
+            <> value "save.gku"
+            <> metavar "<FILEPATH>"
+            <> help "Where the game gets saved (if save is run)" )
+         <*> strOption
+             ( long "load"
+            <> short 'l'
+            <> value "none"
+            <> metavar "<LOAD FILE>"
+            <> help "if this argument is passed in, the game will load a save" )
 
 main :: IO ()
 main = do
     composed <- execParser cliargs
+    
+    -- let maybeSpec = if (doesFileExist $ argLoadFilePath composed)
+    --                      then do 
+    --                         a <- readFile $ argLoadFilePath composed
+    --                         Just a
+    --                      else Nothing
+    let maybeSpec = readFile $ argLoadFilePath composed
     playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
-        ( initWorld (argSize composed) (argTarget composed) )         -- in Board.hs
+        ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just maybeSpec) )         -- in Board.hs
         drawIOWorld               -- in Draw.hs
         handleInputIO             -- in Input.hs
         updateWorldIO             -- in AI.hs

@@ -43,8 +43,6 @@ initBoard bDim bTarg = do
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
   Board tileSize bDimension target loci [] []
 
-
-
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
 -- names, timers, information about rule variants, etc)
@@ -53,9 +51,17 @@ initBoard bDim bTarg = do
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 data World = World { board :: Board,
-                     turn :: Col }
+                     turn :: Col,
+                     filePath :: String }      -- Just if file exists, otherwise Nothing
 
-initWorld bDim bTarg = World (initBoard bDim bTarg) Black
+initWorld :: Int -> Int -> String -> Maybe (IO String) -> World
+initWorld bDim bTarg filePath loader = do
+  case (loader) of
+    Just loadspec -> parseWorldSpec loadspec
+    Nothing -> World (initBoard bDim bTarg) Black filePath
+
+parseWorldSpec :: IO String -> World
+parseWorldSpec spec = undefined
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -119,7 +125,7 @@ undoTurn w = do
                 then oBs
                 else init oBs
       let nWs = wPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
 
     Black -> do 
       let oWs = wPieces curBoard    
@@ -127,7 +133,7 @@ undoTurn w = do
                 then oWs
                 else init oWs
       let nBs = bPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
 undoRound :: World -> World
 undoRound w = do 
   {-- 
@@ -146,9 +152,9 @@ undoRound w = do
                then oWs
                else init oWs 
 
-  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w)
+  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)
 
-{- In these functions:
+{- In these functions
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:
 - if n == 1, the colour 'col' has won
@@ -162,5 +168,6 @@ evaluate :: Board -> Col -> Int
 evaluate = undefined
 
 -- saveWorld :: World -> String -> IO ()
-saveWorld w filePath =
-    writeFile "file.txt" "Boo\n"
+saveWorld w filePath = do
+    writeFile filePath $ (show $ turn w) ++ "\n"
+    appendFile filePath $ show $ board w
