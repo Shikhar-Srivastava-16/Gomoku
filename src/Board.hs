@@ -34,10 +34,10 @@ btloci bDims tSize = do
   [ (x, y) | x <- bs, y <- bs ]
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard = do
-  let bDimension = 5            -- 1 less than the actual dimension on the board
+initBoard bDim bTarg = do
+  let bDimension = (bDim - 1)            -- 1 less than the actual dimension on the board
   let tileSize = 50
-  let target = 3
+  let target = bTarg
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
   Board tileSize bDimension target loci (Set.fromList []) (Set.fromList [])
 
@@ -51,7 +51,7 @@ initBoard = do
 data World = World { board :: Board,
                      turn :: Col }
 
-initWorld = World initBoard Black
+initWorld bDim bTarg = World (initBoard bDim bTarg) Black
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)

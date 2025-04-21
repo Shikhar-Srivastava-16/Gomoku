@@ -1,6 +1,10 @@
 module Main where
 
+import Debug.Trace
 import Graphics.Gloss
+import System.Environment
+import Options.Applicative
+
 
 import Board
 import Draw
@@ -20,10 +24,50 @@ import AI
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
-main :: IO ()
-main = play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) 10
-            initWorld -- in Board.hs
-            drawWorld -- in Draw.hs
-            handleInput -- in Input.hs
-            updateWorld -- in AI.hs
+-- parser library: https://hackage.haskell.org/package/optparse-applicative
+data CLIArgs = CLIArgs { argSize :: Int,
+                         argTarget :: Int }
+    -- deriving show
 
+composeArgs :: CLIArgs -> IO () 
+composeArgs _ = return ()
+composeArgs cli = putStrLn $ "Fubar Brain"
+
+cliParser :: Parser CLIArgs
+cliParser = CLIArgs
+         -- parser for size
+         <$> option auto
+             ( long "bsize"
+            <> short 's'
+            <> metavar "<SIZE>"
+            <> value 6
+            <> help "The size of the board" )
+         -- parser for target
+         <*> option auto
+             ( long "target"
+            <> short 't'
+            <> metavar "<TARGET>"
+            <> value 3
+            <> help "The number of tokens in a row needed to win" )
+
+main :: IO ()
+main = do
+    composed <- execParser cliargs
+    play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) 10
+        ( initWorld (argSize composed) (argTarget composed) )         -- in Board.hs
+        drawWorld               -- in Draw.hs
+        handleInput             -- in Input.hs
+        updateWorld             -- in AI.hs
+    where
+        cliargs = info (cliParser <**> helper)
+            ( fullDesc
+           <> header "Starting up gomoku"
+           <> progDesc "Gomoku: Five-in-a-row, written in haskell!" )
+      -- do str <- getArgs
+      --    print str
+      --    let a = trace (show str) 6
+      --    play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) 10
+      --        ( initWorld a )         -- in Board.hs
+      --        drawWorld               -- in Draw.hs
+      --        handleInput             -- in Input.hs
+      --        updateWorld             -- in AI.hs
