@@ -26,7 +26,8 @@ import AI
 
 -- parser library: https://hackage.haskell.org/package/optparse-applicative
 data CLIArgs = CLIArgs { argSize :: Int,
-                         argTarget :: Int }
+                         argTarget :: Int, 
+                         argSpd :: Int }
 
 cliParser :: Parser CLIArgs
 cliParser = CLIArgs
@@ -44,11 +45,18 @@ cliParser = CLIArgs
             <> metavar "<TARGET>"
             <> value 3
             <> help "The number of tokens in a row needed to win" )
+         <*> option auto
+             ( long "speed"
+            <> short 'v'
+            <> metavar "<GAME LOOP SPEED>"
+            <> value 10
+            <> help "The speed at which game loop runs, i.e the number of times the loop functions are called per second"
+             )
 
 main :: IO ()
 main = do
     composed <- execParser cliargs
-    play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) 10
+    play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
         ( initWorld (argSize composed) (argTarget composed) )         -- in Board.hs
         drawWorld               -- in Draw.hs
         handleInput             -- in Input.hs

@@ -51,7 +51,7 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
         let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
         case newBoard of
             Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") World b (other $ turn w)
-            Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") World (board w) (turn w)
+            Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") w
 -- handleInput (EventKey (Char k) Down _ _) b
 --     = trace ("Key " ++ show k ++ " down") b
 -- handleInput (EventKey (Char k) Up _ _) b
