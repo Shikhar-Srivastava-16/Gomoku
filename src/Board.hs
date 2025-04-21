@@ -3,7 +3,7 @@ import Debug.Trace
 import qualified Data.Set as Set
 
 data Col = Black | White
-  deriving Show
+  deriving (Eq, Show)
 
 other :: Col -> Col
 other Black = White
@@ -106,11 +106,13 @@ For every position ((x, y), col) in the 'pieces' list:
 - if n > 1, move one step in direction D, and check for a line of
   n-1 in a row.
 -}
-
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate board col = -- 2 for won, 0 for lost, 1 for still deciding
-  if checkWon board == Nothing then 0
-  else if checkWon board == col then 2
-  else 1
+evaluate board col = do-- 2 for won, 0 for lost, 1 for still deciding
+  case checkWon board of
+    Nothing -> 10
+    Just col' -> if col' == col then 20 else 0
+
+evalTie :: Board -> Col -> Int
+evalTie board col = undefined
