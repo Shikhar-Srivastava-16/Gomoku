@@ -27,4 +27,4 @@
 
 ## Apr 21st
 ### ss504
- - added undo
+ - added undo options with 'u' and 'b'

@@ -1,6 +1,5 @@
 module Board where
 import Debug.Trace
-import qualified Data.Set as Set
 
 data Col = Black | White
   deriving Show
@@ -23,8 +22,8 @@ data Board = Board { tileSize :: Int,
                      size :: Int,
                      target :: Int,
                      buttonLoci :: [Position],
-                     wPieces :: Set.Set Position,
-                     bPieces :: Set.Set Position }
+                     wPieces :: [Position],
+                     bPieces :: [Position] }
   deriving Show
 
 btloci :: Float -> Float -> [Position]
@@ -39,7 +38,7 @@ initBoard bDim bTarg = do
   let tileSize = 50
   let target = bTarg
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
-  Board tileSize bDimension target loci (Set.fromList []) (Set.fromList [])
+  Board tileSize bDimension target loci [] []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -63,12 +62,12 @@ makeMove :: Board -> Col -> Position -> Maybe Board
 makeMove oldBoard curTurn newPosition = do
   if not (newPosition `elem` (trace ("buttons: " ++ show (buttonLoci oldBoard)) (buttonLoci oldBoard)) ) then
     Nothing -- Position is not a valid board spot
-  else if newPosition `Set.member` wPieces oldBoard || newPosition `Set.member` bPieces oldBoard then
+  else if newPosition `elem` wPieces oldBoard || newPosition `elem` bPieces oldBoard then
     Nothing -- Position already taken by another piece
   else
     case curTurn of
-      Black -> Just $ oldBoard { bPieces = Set.insert newPosition (bPieces oldBoard) }
-      White -> Just $ oldBoard { wPieces = Set.insert newPosition (wPieces oldBoard) }
+      Black -> Just $ oldBoard { bPieces = (bPieces oldBoard) ++ [newPosition] }
+      White -> Just $ oldBoard { wPieces = (wPieces oldBoard) ++ [newPosition] }
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
@@ -95,10 +94,10 @@ hasWon board col =
 
     countLine (x, y) (xoffset, yoffset) count =
       let checkPos = (x + xoffset, y + yoffset)
-      in if checkPos `Set.member` pieces
+      in if checkPos `elem` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
          else count
-  in any (\pos -> any (shouldCheckLine pos) directions) (Set.toList pieces)
+  in any (\pos -> any (shouldCheckLine pos) directions) (pieces)
 
 {-- 
  - Check world turn
@@ -110,20 +109,20 @@ undoTurn w = do
   let curBoard = board w
   case (turn w) of
     White -> do
-      let oBs = Set.toList $ bPieces curBoard    
+      let oBs = bPieces curBoard    
       let nBs = if (oBs == [])
                 then oBs
                 else init oBs
-      let nWs = Set.toList $ wPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (Set.fromList nWs) (Set.fromList nBs) ) (other $ turn w)
+      let nWs = wPieces curBoard    
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
 
     Black -> do 
-      let oWs = Set.toList $ wPieces curBoard    
+      let oWs = wPieces curBoard    
       let nWs = if (oWs == [])
                 then oWs
                 else init oWs
-      let nBs = Set.toList $ bPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (Set.fromList nWs) (Set.fromList nBs) ) (other $ turn w)
+      let nBs = bPieces curBoard    
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
 undoRound :: World -> World
 undoRound w = do 
   {-- 
@@ -132,8 +131,8 @@ undoRound w = do
        newWs = init Ws
   --}
   let curBoard = board w
-  let oBs = Set.toList $ bPieces curBoard
-  let oWs = Set.toList $ wPieces curBoard
+  let oBs = bPieces curBoard
+  let oWs = wPieces curBoard
   let nBs = if (oBs == [])
                then oBs
                else init oBs 
@@ -142,7 +141,7 @@ undoRound w = do
                then oWs
                else init oWs 
 
-  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (Set.fromList nWs) (Set.fromList nBs) ) (turn w)
+  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w)
 
 {- In these functions:
 To check for a line of n in a row in a direction D:

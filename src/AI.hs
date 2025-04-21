@@ -3,7 +3,6 @@ module AI where
 import Lists
 import Board
 import Debug.Trace
-import qualified Data.Set as Set
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,

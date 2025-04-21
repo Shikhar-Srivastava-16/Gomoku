@@ -28,7 +28,8 @@ import AI
 data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int, 
                          argSpd :: Int,
-                         argAI :: Int }
+                         argAI :: Int,
+                         switchSave :: Bool }
 
 cliParser :: Parser CLIArgs
 cliParser = CLIArgs
@@ -58,6 +59,10 @@ cliParser = CLIArgs
             <> metavar "<WHICH AI>"
             <> value 0 -- NOTE: No AI by default TODO change later?
             <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
+         <*> switch
+             ( long "save"
+            <> short 'd' 
+            <> help "Whether or not the game gets saved" )
 
 main :: IO ()
 main = do
@@ -67,6 +72,9 @@ main = do
         drawWorld               -- in Draw.hs
         handleInput             -- in Input.hs
         updateWorld             -- in AI.hs
+    if (switchSave composed) 
+        then putStrLn "NOPE"
+        else putStrLn "YEP"
     where
         cliargs = info (cliParser <**> helper)
             ( fullDesc
