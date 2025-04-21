@@ -27,7 +27,8 @@ import AI
 -- parser library: https://hackage.haskell.org/package/optparse-applicative
 data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int, 
-                         argSpd :: Int }
+                         argSpd :: Int,
+                         argAI :: Int }
 
 cliParser :: Parser CLIArgs
 cliParser = CLIArgs
@@ -50,8 +51,13 @@ cliParser = CLIArgs
             <> short 'v'
             <> metavar "<GAME LOOP SPEED>"
             <> value 10
-            <> help "The speed at which game loop runs, i.e the number of times the loop functions are called per second"
-             )
+            <> help "The speed at which game loop runs, i.e the number of times the loop functions are called per second" )
+         <*> option auto
+             ( long "aigen"
+            <> short 'a'
+            <> metavar "<WHICH AI>"
+            <> value 0 -- NOTE: No AI by default TODO change later?
+            <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
 
 main :: IO ()
 main = do
@@ -66,11 +72,3 @@ main = do
             ( fullDesc
            <> header "Starting up gomoku"
            <> progDesc "Gomoku: Five-in-a-row, written in haskell!" )
-      -- do str <- getArgs
-      --    print str
-      --    let a = trace (show str) 6
-      --    play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) 10
-      --        ( initWorld a )         -- in Board.hs
-      --        drawWorld               -- in Draw.hs
-      --        handleInput             -- in Input.hs
-      --        updateWorld             -- in AI.hs
