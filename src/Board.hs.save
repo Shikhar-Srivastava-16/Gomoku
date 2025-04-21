@@ -19,7 +19,7 @@ type Position = (Float, Float)
 --
 -- Board 10 5 [((5, 5), Black), ((8,7), White)]     NOTE: NO
 
-data Board = Board { tileSize :: Int,
+bitdata Board = Board { tileSize :: Int,
                      size :: Int,
                      target :: Int,
                      buttonLoci :: [Position],
@@ -34,10 +34,10 @@ btloci bDims tSize = do
   [ (x, y) | x <- bs, y <- bs ]
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard bDim bTarg = do
-  let bDimension = (bDim - 1)            -- 1 less than the actual dimension on the board
+initBoard = do
+  let bDimension = 6            -- 1 less than the actual dimension on the board
   let tileSize = 50
-  let target = bTarg
+  let target = 3
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
   Board tileSize bDimension target loci (Set.fromList []) (Set.fromList [])
 
@@ -51,7 +51,7 @@ initBoard bDim bTarg = do
 data World = World { board :: Board,
                      turn :: Col }
 
-initWorld bDim bTarg = World (initBoard bDim bTarg) Black
+initWorld = World initBoard Black
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -74,8 +74,8 @@ makeMove oldBoard curTurn newPosition = do
 -- Returns 'Just c' if the player 'c' has won
 checkWon :: Board -> Maybe Col
 checkWon board =
-  if hasWon board White then ( trace ("Wh Win") Just White )
-  else if hasWon board Black then ( trace ("Bl Win") Just Black )
+  if hasWon board White then Just White
+  else if hasWon board Black then Just Black
   else Nothing
 
 {- Hint: One way to implement 'checkWon' would be to write functions
@@ -110,7 +110,4 @@ For every position ((x, y), col) in the 'pieces' list:
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate board col = -- 2 for won, 0 for lost, 1 for still deciding
-  if checkWon board == Nothing then 0
-  else if checkWon board == col then 2
-  else 1
+evaluate = undefined
