@@ -60,13 +60,20 @@ getBestMove depth tree = (125.0, 125.0)
 updateWorld :: Float -- ^ time since last update (you can ignore this)
             -> World -- ^ current world state
             -> World
-updateWorld t w = do 
-  let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
-  -- now make new board
-  let newBoard = makeMove (board w) (turn w) newPos
-  case newBoard of
-    Just b -> World b (other $ turn w)
-    Nothing -> trace ("Invalid Gen") (World (board w) (turn w))
+updateWorld t w =
+  do
+  let won = checkWon $ board w
+  case won of
+    Nothing -> trace("No Win") w
+    Just Black -> trace("Bl Win") w
+    Just White -> trace("Wh Win") w 
+
+ -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
+ -- -- now make new board
+ -- let newBoard = makeMove (board w) (turn w) newPos
+ -- case newBoard of
+ --   Just b -> World b (other $ turn w)
+ --   Nothing -> trace ("Invalid Gen") (World (board w) (turn w))
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use

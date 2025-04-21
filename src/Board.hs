@@ -74,8 +74,8 @@ makeMove oldBoard curTurn newPosition = do
 -- Returns 'Just c' if the player 'c' has won
 checkWon :: Board -> Maybe Col
 checkWon board =
-  if hasWon board White then Just White
-  else if hasWon board Black then Just Black
+  if hasWon board White then ( trace ("Wh Win") Just White )
+  else if hasWon board Black then ( trace ("Bl Win") Just Black )
   else Nothing
 
 {- Hint: One way to implement 'checkWon' would be to write functions

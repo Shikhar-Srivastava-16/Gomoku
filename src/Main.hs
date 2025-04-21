@@ -29,9 +29,9 @@ data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int }
     -- deriving show
 
-composeArgs :: CLIArgs -> IO () 
-composeArgs _ = return ()
-composeArgs cli = putStrLn $ "Fubar Brain"
+-- composeArgs :: CLIArgs -> IO () 
+-- composeArgs _ = return ()
+-- composeArgs cli = putStrLn $ "Fubar Brain"
 
 cliParser :: Parser CLIArgs
 cliParser = CLIArgs
