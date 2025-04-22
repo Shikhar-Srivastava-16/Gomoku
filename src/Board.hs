@@ -106,10 +106,6 @@ data Bmps = Bmps { bl :: Picture,
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
--- TODO: Validate :
---                Invalid if position not in buttonLoci               :: trying to place something off the board
---                else Invalid if position in wPieces                 :: trying to place something where there is already a piece
---                else Invalid if position in bPieces                 :: trying to place something where there is already a piece
 makeMove oldBoard curTurn newPosition = do
   if not (newPosition `elem` (trace ("buttons: " ++ show (buttonLoci oldBoard)) (buttonLoci oldBoard)) ) then
     Nothing -- Position is not a valid board spot
@@ -204,21 +200,19 @@ For every position ((x, y), col) in the 'pieces' list:
   n-1 in a row.
 -}
 
--- An evaluation function for a minimax search. Given a board and a colour
--- return an integer indicating how good the board is for that colour.
-evaluate :: Board -> Col -> Int
--- saveWorld :: World -> String -> IO ()
 writeWorldToJSON :: FilePath -> World -> IO ()
-evaluate board col
-  | won == Just col = 1
-  | won == Just (other col) = -1
-  | otherwise = 0
-  where won = checkWon board
-
 writeWorldToJSON path world = B.writeFile path (encode world)
+
 saveWorld w filePath = do
   if filePath == "!!none!!"
     then error "Malformed file path provided, please do not use reserved keyword '!!none!!'"
     else do
       writeWorldToJSON filePath w
   
+-- An evaluation function for a minimax search. Given a board and a colour
+-- return an integer indicating how good the board is for that colour.
+evaluate :: Board -> Col -> Int
+evaluate board _
+  | hasWon board White = -1
+  | hasWon board Black = 1
+  | otherwise = 0

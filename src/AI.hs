@@ -4,6 +4,10 @@ import Lists
 import Board
 import Debug.Trace
 
+import Data.List (maximumBy, minimumBy)
+import Data.Ord (comparing)
+
+
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
                            next_moves :: [(Position, GameTree)] }
@@ -57,7 +61,15 @@ buildTree gen b c = let moves = gen b c in -- generated moves
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
-getBestMove depth tree = (125.0, 125.0)
+getBestMove depth tree = snd (minimax depth tree)
+
+minimax :: Int -> GameTree -> (Int, Position)
+minimax depth (GameTree board playerTurn possibleMoves)
+  | depth <= 0 || null possibleMoves = (evaluate board playerTurn, (-1,-1))
+  |  playerTurn == Black = maximumBy (comparing fst) evalSubPositions
+  | otherwise = minimumBy (comparing fst) evalSubPositions
+  where 
+    evalSubPositions = [ (fst (minimax (depth - 1) subtree), pos) | (pos, subtree) <- possibleMoves]
 
 -- -- Update the world state after some time has passed
 -- updateWorld :: Float -- ^ time since last update (you can ignore this)
@@ -72,16 +84,16 @@ getBestMove depth tree = (125.0, 125.0)
 --     Just White -> trace("Wh Win") w 
 
 updateWorld :: Float -> World -> World
-updateWorld t w
+updateWorld _ w
   | checkWon (board w) == Just Black = trace "Bl Win" w
   | checkWon (board w) == Just White = trace "Wh Win" w
-  | null allPossibleMoves = trace "error generating moves or none valid" w
-  | turn w == Black = case makeMove (board w) (turn w) (head allPossibleMoves) of
-                          -- Just validBoard -> World { bmps = bmps w, board = validBoard, turn = other (turn w)}
-                          Just validBoard -> World { board = validBoard, turn = other $ turn w, filePath = filePath w }
-                          Nothing -> trace "ai error" w
-  | otherwise = trace ("No Win") w
-  where allPossibleMoves = gen (board w) (turn w)
+  | turn w == Black =
+      let bestMove = getBestMove 2 (buildTree gen (board w) Black) -- You can adjust depth
+      in case makeMove (board w) Black bestMove of
+           Just newBoard -> w { board = newBoard, turn = White, filePath = filePath w }
+           Nothing -> trace "Error with the ai" w
+  | otherwise = w -- return world for human move
+
 
  -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
  -- -- now make new board
