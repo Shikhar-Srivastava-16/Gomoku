@@ -6,6 +6,11 @@ import Board
 import AI
 
 import Debug.Trace
+import Control.Concurrent
+import Control.Exception
+
+-- functions for timed turns - whichever thread of the timer finishing and the player making a move are done first, are returned
+compete :: [IO a] -> IO a                                                        compete actions = do                                                                 mvar <- newEmptyMVar                                                             tids <- mapM (\action -> forkIO $ action >>= putMVar mvar) actions               result <- takeMVar mvar                                                          mapM_ killThread tids                                                            return result                                                                                                                                                 timeout :: Int -> IO a -> IO (Maybe a)                                           timeout usec action = compete [fmap Just action, threadDelay usec >> return Nothing]
 
 -- functions for snapping
 coordSnap w coord = rndAdv ( size $ board w ) ( toInteger $ tileSize $ board w ) coord
@@ -49,9 +54,15 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
     = do
         let snapped = clickSnap w (round x, round y)
         let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
-        case newBoard of
-            Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") World (bmps w) b (other $ turn w)
-            Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") w
+        timeoutResult <- timeout 1000000 $ evaluate $ makeMove (board w) (turn w) movePos
+        let doesTurnInTime = case timeoutResult of
+            Just _ -> trace ("Returned in time!") True
+            Nothing -> trace ("turn timed out") False
+        if doesTurnInTime 
+            then case newBoard of
+                Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") World (bmps w) b (other $ turn w)
+                Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") w
+            else World (bmps w) (board w) (other $ turn w)
 -- handleInput (EventKey (Char k) Down _ _) b
 --     = trace ("Key " ++ show k ++ " down") b
 handleInput (EventKey (Char 'u') Up _ _) w

@@ -5,9 +5,13 @@ import Graphics.Gloss
 data Col = Black | White
   deriving (Show, Eq)
 
+
+
 other :: Col -> Col
 other Black = White
 other White = Black
+
+
 
 type Position = (Float, Float)
 
