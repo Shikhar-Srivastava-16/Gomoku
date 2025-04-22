@@ -11,7 +11,8 @@ import Board
 drawWorld :: World -> Picture
 drawWorld w = do
     let bDims = fromIntegral $ size $ board w
-    Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
+    Pictures $ drawBmpGrid w
+    -- Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
  
 drawGrid tSize bDims wPieces bPieces = do
     -- bs is a list of points
@@ -22,5 +23,12 @@ drawGrid tSize bDims wPieces bPieces = do
     -- inner list is two points which are extreme ends of each line
     let loci = [[(con, b), (-1 * con, b)] | b <- bs]++[[(b, con), (b, -1 * con)] | b <- bs]
     let wPics = [ translate xi yi (Color white $ circleSolid $ tSize * 0.4) | (xi, yi) <- wPieces]
-    let bPics = [ translate xi yi (Color black $ circleSolid $ tSize * 0.4) | (xi, yi) <- bPieces]
+    let bPics = [ translate xi yi (Color black $ circleSolid $ tSize * 0.4) | (xi, yi) <- bPieces]    
     [ Color white $ Line locus | locus <- loci ] ++ wPics ++ bPics
+
+drawBmpGrid w = do
+    let wPics = [ translate xi yi (scale 0.06 0.06 $ wh $ bmps $ w) | (xi, yi) <- wPieces $ board w]
+    let bPics = [ translate xi yi (scale 0.04 0.04 $ bl $ bmps $ w) | (xi, yi) <- bPieces $ board w]
+    let loci = [ translate xi yi (scale 0.5 0.5 $ sq $ bmps $ w) | (xi, yi) <- buttonLoci $ board w]  
+    
+    loci ++ wPics ++ bPics

@@ -2,6 +2,7 @@ module Main where
 
 import Debug.Trace
 import Graphics.Gloss
+import Graphics.Gloss.Data.Bitmap
 import System.Environment
 import Options.Applicative
 
@@ -28,8 +29,7 @@ import AI
 data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int, 
                          argSpd :: Int,
-                         argAI :: Int,
-                         switchSave :: Bool }
+                         argAI :: Int }
 
 cliParser :: Parser CLIArgs
 cliParser = CLIArgs
@@ -59,22 +59,22 @@ cliParser = CLIArgs
             <> metavar "<WHICH AI>"
             <> value 0 -- NOTE: No AI by default TODO change later?
             <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
-         <*> switch
-             ( long "save"
-            <> short 'd' 
-            <> help "Whether or not the game gets saved" )
 
 main :: IO ()
 main = do
+    -- bitmapDataOfBMP?
+    bl <- loadBMP "res/bl.bmp"
+    wh <- loadBMP "res/wh.bmp"
+    sq <- loadBMP "res/sq.bmp"
+
+    let bmps = Bmps bl wh sq
     composed <- execParser cliargs
     play (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
-        ( initWorld (argSize composed) (argTarget composed) )         -- in Board.hs
+        ( initWorld (argSize composed) (argTarget composed) bmps )         -- in Board.hs
         drawWorld               -- in Draw.hs
         handleInput             -- in Input.hs
         updateWorld             -- in AI.hs
-    if (switchSave composed) 
-        then putStrLn "NOPE"
-        else putStrLn "YEP"
+
     where
         cliargs = info (cliParser <**> helper)
             ( fullDesc

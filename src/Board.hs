@@ -1,5 +1,6 @@
 module Board where
 import Debug.Trace
+import Graphics.Gloss
 
 data Col = Black | White
   deriving Show
@@ -47,10 +48,16 @@ initBoard bDim bTarg = do
 -- Feel free to extend this, and 'Board' above with anything you think
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
-data World = World { board :: Board,
+
+data Bmps = Bmps { bl :: Picture,
+                   wh :: Picture,
+                   sq :: Picture }
+
+data World = World { bmps :: Bmps, 
+                     board :: Board,
                      turn :: Col }
 
-initWorld bDim bTarg = World (initBoard bDim bTarg) Black
+initWorld bDim bTarg bmps = World bmps (initBoard bDim bTarg) Black
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -114,7 +121,7 @@ undoTurn w = do
                 then oBs
                 else init oBs
       let nWs = wPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
 
     Black -> do 
       let oWs = wPieces curBoard    
@@ -122,7 +129,7 @@ undoTurn w = do
                 then oWs
                 else init oWs
       let nBs = bPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
 undoRound :: World -> World
 undoRound w = do 
   {-- 
@@ -141,7 +148,7 @@ undoRound w = do
                then oWs
                else init oWs 
 
-  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w)
+  World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w)
 
 {- In these functions:
 To check for a line of n in a row in a direction D:
