@@ -2,6 +2,8 @@ module Board where
 import Debug.Trace
 import Control.Monad (when)
 
+import Parsing
+
 data Col = Black | White
   deriving Show
 
@@ -54,14 +56,26 @@ data World = World { board :: Board,
                      turn :: Col,
                      filePath :: String }      -- Just if file exists, otherwise Nothing
 
-initWorld :: Int -> Int -> String -> Maybe (IO String) -> World
-initWorld bDim bTarg filePath loader = do
-  case (loader) of
-    Just loadspec -> parseWorldSpec loadspec
-    Nothing -> World (initBoard bDim bTarg) Black filePath
+initWorld :: Int -> Int -> String -> String -> World
+initWorld bDim bTarg filePath "" = World (initBoard bDim bTarg) Black filePath
+initWorld bDim bTarg filePath spec = parseWorldSpec spec
 
-parseWorldSpec :: IO String -> World
-parseWorldSpec spec = undefined
+
+{--
+ - pTurn
+ - parse (string "Board")
+ - parse space
+ - parse {
+ - parse tileSize; size; target; each have a number
+ - parse buttonLoci; wPieces; bPieces; each have lists
+ --}
+
+-- pAny = parse (string "Black" <|> string "White") -- will always have one of these
+
+parseWorldSpec :: String -> World
+parseWorldSpec spec = do
+                         --turn <- parse pTurn spec
+                         World (initBoard 6 3) Black "foo"
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)

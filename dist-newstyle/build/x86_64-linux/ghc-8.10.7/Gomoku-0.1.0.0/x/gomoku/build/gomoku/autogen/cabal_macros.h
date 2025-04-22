@@ -11,6 +11,17 @@
   (major1) == 0 && (major2) == 1 && (minor) <= 0)
 #endif /* MIN_VERSION_Gomoku */
 
+/* package aeson-2.2.3.0 */
+#ifndef VERSION_aeson
+#define VERSION_aeson "2.2.3.0"
+#endif /* VERSION_aeson */
+#ifndef MIN_VERSION_aeson
+#define MIN_VERSION_aeson(major1,major2,minor) (\
+  (major1) <  2 || \
+  (major1) == 2 && (major2) <  2 || \
+  (major1) == 2 && (major2) == 2 && (minor) <= 3)
+#endif /* MIN_VERSION_aeson */
+
 /* package base-4.14.3.0 */
 #ifndef VERSION_base
 #define VERSION_base "4.14.3.0"
@@ -33,9 +44,20 @@
   (major1) == 0 && (major2) == 6 && (minor) <= 5)
 #endif /* MIN_VERSION_containers */
 
-/* package gloss-1.13.2.2 */
+/* package directory-1.3.6.0 */
+#ifndef VERSION_directory
+#define VERSION_directory "1.3.6.0"
+#endif /* VERSION_directory */
+#ifndef MIN_VERSION_directory
+#define MIN_VERSION_directory(major1,major2,minor) (\
+  (major1) <  1 || \
+  (major1) == 1 && (major2) <  3 || \
+  (major1) == 1 && (major2) == 3 && (minor) <= 6)
+#endif /* MIN_VERSION_directory */
+
+/* package gloss-1.13.2.1 */
 #ifndef VERSION_gloss
-#define VERSION_gloss "1.13.2.2"
+#define VERSION_gloss "1.13.2.1"
 #endif /* VERSION_gloss */
 #ifndef MIN_VERSION_gloss
 #define MIN_VERSION_gloss(major1,major2,minor) (\
@@ -43,6 +65,17 @@
   (major1) == 1 && (major2) <  13 || \
   (major1) == 1 && (major2) == 13 && (minor) <= 2)
 #endif /* MIN_VERSION_gloss */
+
+/* package optparse-applicative-0.18.1.0 */
+#ifndef VERSION_optparse_applicative
+#define VERSION_optparse_applicative "0.18.1.0"
+#endif /* VERSION_optparse_applicative */
+#ifndef MIN_VERSION_optparse_applicative
+#define MIN_VERSION_optparse_applicative(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  18 || \
+  (major1) == 0 && (major2) == 18 && (minor) <= 1)
+#endif /* MIN_VERSION_optparse_applicative */
 
 /* tool gcc-11 */
 #ifndef TOOL_VERSION_gcc

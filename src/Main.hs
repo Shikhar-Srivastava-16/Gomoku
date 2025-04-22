@@ -11,6 +11,7 @@ import Board
 import Draw
 import Input
 import AI
+import Parsing
 
 -- 'play' starts up a graphics window and sets up handlers for dealing
 -- with inputs and updating the world state.
@@ -74,18 +75,14 @@ cliParser = CLIArgs
             <> metavar "<LOAD FILE>"
             <> help "if this argument is passed in, the game will load a save" )
 
+
 main :: IO ()
 main = do
     composed <- execParser cliargs
-    
-    -- let maybeSpec = if (doesFileExist $ argLoadFilePath composed)
-    --                      then do 
-    --                         a <- readFile $ argLoadFilePath composed
-    --                         Just a
-    --                      else Nothing
-    let maybeSpec = readFile $ argLoadFilePath composed
+    spec <- readFile $ argLoadFilePath composed
+
     playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
-        ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just maybeSpec) )         -- in Board.hs
+        ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (spec) )         -- in Board.hs
         drawIOWorld               -- in Draw.hs
         handleInputIO             -- in Input.hs
         updateWorldIO             -- in AI.hs
