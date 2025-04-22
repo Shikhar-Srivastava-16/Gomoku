@@ -98,16 +98,16 @@ main = do
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) )         -- in Board.hs
                 ( drawIOWorld bmps )              -- in Draw.hs
-                handleInputIO             -- in Input.hs
-                updateWorldIO             -- in AI.hs do 
+                handleInputIO                     -- in Input.hs
+                updateWorldIO                     -- in AI.hs
 
         else do
             spec <- foo (argLoadFilePath composed)
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) )         -- in Board.hs
                 ( drawIOWorld bmps )            -- in Draw.hs
-                handleInputIO             -- in Input.hs
-                updateWorldIO             -- in AI.hs  -- in AI.hs
+                handleInputIO                   -- in Input.hs
+                updateWorldIO                   -- in AI.hs
 
     where
         cliargs = info (cliParser <**> helper)
@@ -115,10 +115,9 @@ main = do
            <> header "Starting up gomoku"
            <> progDesc "Gomoku: Five-in-a-row, written in haskell!" )
 
-
+-- Wrappers to run these functions 'inside' the IO monad, so that we can read from and write to files
 drawIOWorld :: Bmps -> World -> IO Picture
 drawIOWorld bmps w = return $ drawWorld bmps w
--- handleIOInput :: World -> World
 updateWorldIO :: Float -> World -> IO World
 updateWorldIO t w = return $ updateWorld t w
 

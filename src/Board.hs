@@ -72,7 +72,6 @@ initBoard bDim bTarg = do
 -- most recent moves were).
 
 data World = World { 
-  -- bmps :: Bmps,
                      board :: Board,
                      turn :: Col,
                      filePath :: String }      -- Just if file exists, otherwise Nothing
@@ -218,5 +217,8 @@ evaluate board col
 
 writeWorldToJSON path world = B.writeFile path (encode world)
 saveWorld w filePath = do
-  writeWorldToJSON filePath w
+  if filePath == "!!none!!"
+    then error "Malformed file path provided, please do not use reserved keyword '!!none!!'"
+    else do
+      writeWorldToJSON filePath w
   
