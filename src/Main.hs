@@ -28,8 +28,7 @@ import AI
 data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int, 
                          argSpd :: Int,
-                         argAI :: Int,
-                         switchSave :: Bool }
+                         argAI :: Int}
 
 cliParser :: Parser CLIArgs
 cliParser = CLIArgs
@@ -59,10 +58,6 @@ cliParser = CLIArgs
             <> metavar "<WHICH AI>"
             <> value 0 -- NOTE: No AI by default TODO change later?
             <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
-         <*> switch
-             ( long "save"
-            <> short 'd' 
-            <> help "Whether or not the game gets saved" )
 
 main :: IO ()
 main = do
