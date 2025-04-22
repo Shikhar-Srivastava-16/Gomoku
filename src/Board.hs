@@ -161,8 +161,7 @@ For every position ((x, y), col) in the 'pieces' list:
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate board col
-  | won == Just col = 1
-  | won == Just (other col) = -1
+evaluate board _
+  | hasWon board White = -1
+  | hasWon board Black = 1
   | otherwise = 0
-  where won = checkWon board
