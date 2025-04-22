@@ -7,6 +7,13 @@ import Options.Applicative
 import Graphics.Gloss.Interface.IO.Game
 import System.Directory
 
+import Data.Aeson
+import Data.Text
+import Control.Applicative
+import Control.Monad
+import qualified Data.ByteString.Lazy as B
+import GHC.Generics
+
 import Board
 import Draw
 import Input
@@ -71,7 +78,7 @@ cliParser = CLIArgs
          <*> strOption
              ( long "load"
             <> short 'l'
-            <> value "none"
+            <> value "!!none!!"
             <> metavar "<LOAD FILE>"
             <> help "if this argument is passed in, the game will load a save" )
 
@@ -79,8 +86,8 @@ cliParser = CLIArgs
 main :: IO ()
 main = do
     composed <- execParser cliargs
-    -- spec <- readFile $ argLoadFilePath composed
-    let spec = 
+    spec <- foo (argLoadFilePath composed)
+
 
     playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
         ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (spec) )         -- in Board.hs
@@ -100,10 +107,11 @@ drawIOWorld w = return $ drawWorld w
 updateWorldIO :: Float -> World -> IO World
 updateWorldIO t w = return $ updateWorld t w
 
-foo :: IO World
-foo = do
+foo :: FilePath -> IO World
+foo filePath = do
    d <- (eitherDecode <$> getJSON) :: IO (Either String World)
    case d of
       Left err -> error "malformed save file"
       Right w -> return w
 
+   where getJSON = B.readFile filePath

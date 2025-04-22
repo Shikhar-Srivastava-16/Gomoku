@@ -75,9 +75,9 @@ data World = World { board :: Board,
 instance FromJSON World
 instance ToJSON World
 
-initWorld :: Int -> Int -> String -> String -> World
-initWorld bDim bTarg filePath "" = World (initBoard bDim bTarg) Black filePath
-initWorld bDim bTarg filePath spec = parseWorldSpec spec
+initWorld :: Int -> Int -> String -> World -> World
+-- initWorld bDim bTarg filePath "" = World (initBoard bDim bTarg) Black filePath
+initWorld bDim bTarg filePath spec = spec
 
 
 {--
@@ -90,11 +90,6 @@ initWorld bDim bTarg filePath spec = parseWorldSpec spec
  --}
 
 -- pAny = parse (string "Black" <|> string "White") -- will always have one of these
-
-parseWorldSpec :: String -> World
-parseWorldSpec spec = do
-                         --turn <- parse pTurn spec
-                         World (initBoard 6 3) Black "foo"
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
