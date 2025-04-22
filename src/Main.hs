@@ -65,7 +65,7 @@ cliParser = CLIArgs
          <*> strOption
              ( long "filepath"
             <> short 'f'
-            <> value "save.gku"
+            <> value "save.json"
             <> metavar "<FILEPATH>"
             <> help "Where the game gets saved (if save is run)" )
          <*> strOption
@@ -79,7 +79,8 @@ cliParser = CLIArgs
 main :: IO ()
 main = do
     composed <- execParser cliargs
-    spec <- readFile $ argLoadFilePath composed
+    -- spec <- readFile $ argLoadFilePath composed
+    let spec = 
 
     playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
         ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (spec) )         -- in Board.hs
@@ -98,3 +99,11 @@ drawIOWorld w = return $ drawWorld w
 -- handleIOInput :: World -> World
 updateWorldIO :: Float -> World -> IO World
 updateWorldIO t w = return $ updateWorld t w
+
+foo :: IO World
+foo = do
+   d <- (eitherDecode <$> getJSON) :: IO (Either String World)
+   case d of
+      Left err -> error "malformed save file"
+      Right w -> return w
+

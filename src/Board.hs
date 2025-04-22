@@ -1,17 +1,31 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Board where
+
 import Debug.Trace
 import Control.Monad (when)
 
-import Parsing
+import Data.Aeson
+import Data.Text
+import Control.Applicative
+import Control.Monad
+import qualified Data.ByteString.Lazy as B
+import GHC.Generics
 
 data Col = Black | White
-  deriving Show
+  deriving (Show, Generic)
+
+instance FromJSON Col
+instance ToJSON Col
 
 other :: Col -> Col
 other Black = White
 other White = Black
 
 type Position = (Float, Float)
+  -- deriving (Show, Generic)
+
+-- instance FromJSON Position
+-- instance ToJSON Position
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -27,9 +41,10 @@ data Board = Board { tileSize :: Int,
                      buttonLoci :: [Position],
                      wPieces :: [Position],
                      bPieces :: [Position] }
-  deriving Show
+  deriving (Show, Generic)
 
-
+instance FromJSON Board
+instance ToJSON Board
 
 btloci :: Float -> Float -> [Position]
 btloci bDims tSize = do
@@ -55,6 +70,10 @@ initBoard bDim bTarg = do
 data World = World { board :: Board,
                      turn :: Col,
                      filePath :: String }      -- Just if file exists, otherwise Nothing
+  deriving (Show, Generic)
+
+instance FromJSON World
+instance ToJSON World
 
 initWorld :: Int -> Int -> String -> String -> World
 initWorld bDim bTarg filePath "" = World (initBoard bDim bTarg) Black filePath
@@ -122,7 +141,7 @@ hasWon board col =
       in if checkPos `elem` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
          else count
-  in any (\pos -> any (shouldCheckLine pos) directions) (pieces)
+  in Prelude.any (\pos -> Prelude.any (shouldCheckLine pos) directions) (pieces)
 
 {-- 
  - Check world turn
@@ -137,7 +156,7 @@ undoTurn w = do
       let oBs = bPieces curBoard    
       let nBs = if (oBs == [])
                 then oBs
-                else init oBs
+                else Prelude.init oBs
       let nWs = wPieces curBoard    
       World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
 
@@ -145,26 +164,26 @@ undoTurn w = do
       let oWs = wPieces curBoard    
       let nWs = if (oWs == [])
                 then oWs
-                else init oWs
+                else Prelude.init oWs
       let nBs = bPieces curBoard    
       World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
 undoRound :: World -> World
 undoRound w = do 
   {-- 
   - remove latest from both
-  - so, newBs = init Bs
-       newWs = init Ws
+  - so, newBs = Prelude.init Bs
+       newWs = Prelude.init Ws
   --}
   let curBoard = board w
   let oBs = bPieces curBoard
   let oWs = wPieces curBoard
   let nBs = if (oBs == [])
                then oBs
-               else init oBs 
+               else Prelude.init oBs 
    
   let nWs = if (oWs == [])
                then oWs
-               else init oWs 
+               else Prelude.init oWs 
 
   World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)
 
@@ -182,6 +201,11 @@ evaluate :: Board -> Col -> Int
 evaluate = undefined
 
 -- saveWorld :: World -> String -> IO ()
+writeWorldToJSON :: FilePath -> World -> IO ()
+writeWorldToJSON path world = B.writeFile path (encode world)
+
 saveWorld w filePath = do
-    writeFile filePath $ (show $ turn w) ++ "\n"
-    appendFile filePath $ show $ board w
+  writeWorldToJSON filePath w
+  
+    -- writeFile filePath $ (show $ turn w) ++ "\n"
+    -- appendFile filePath $ show $ board w
