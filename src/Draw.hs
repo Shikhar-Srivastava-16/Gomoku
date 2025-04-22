@@ -8,10 +8,10 @@ import Board
 --
 -- This will need to extract the Board from the world state and draw it
 -- as a grid plus pieces.
-drawWorld :: World -> Picture
-drawWorld w = do
+drawWorld :: Bmps -> World -> Picture
+drawWorld bmps w = do
     let bDims = fromIntegral $ size $ board w
-    Pictures $ drawBmpGrid w
+    Pictures (drawBmpGrid bmps w)
     -- Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
 
 -- Old drawGrid function for drawing purely rather than with bitmap images
@@ -27,9 +27,9 @@ drawGrid tSize bDims wPieces bPieces = do
     let bPics = [ translate xi yi (Color black $ circleSolid $ tSize * 0.4) | (xi, yi) <- bPieces]    
     [ Color white $ Line locus | locus <- loci ] ++ wPics ++ bPics
 
-drawBmpGrid w = do
-    let wPics = [ translate xi yi (scale 0.06 0.06 $ wh $ bmps $ w) | (xi, yi) <- wPieces $ board w]
-    let bPics = [ translate xi yi (scale 0.04 0.04 $ bl $ bmps $ w) | (xi, yi) <- bPieces $ board w]
-    let loci = [ translate xi yi (scale 0.5 0.5 $ sq $ bmps $ w) | (xi, yi) <- buttonLoci $ board w]  
+drawBmpGrid bmps w = do
+    let wPics = [ translate xi yi (scale 0.06 0.06 $ wh bmps) | (xi, yi) <- wPieces $ board w]
+    let bPics = [ translate xi yi (scale 0.04 0.04 $ bl bmps) | (xi, yi) <- bPieces $ board w]
+    let loci = [ translate xi yi (scale 0.5 0.5 $ sq bmps) | (xi, yi) <- buttonLoci $ board w]  
     
     loci ++ wPics ++ bPics

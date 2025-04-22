@@ -77,7 +77,8 @@ updateWorld t w
   | checkWon (board w) == Just White = trace "Wh Win" w
   | null allPossibleMoves = trace "error generating moves or none valid" w
   | turn w == Black = case makeMove (board w) (turn w) (head allPossibleMoves) of
-                          Just validBoard -> World { bmps = bmps w, board = validBoard, turn = other (turn w)}
+                          -- Just validBoard -> World { bmps = bmps w, board = validBoard, turn = other (turn w)}
+                          Just validBoard -> World { board = validBoard, turn = other (turn w)}
                           Nothing -> trace "ai error" w
   | otherwise = trace ("No Win") w
   where allPossibleMoves = gen (board w) (turn w)

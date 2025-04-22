@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric, StandaloneDeriving #-}
 module Board where
 
 import Debug.Trace
@@ -6,6 +6,7 @@ import Debug.Trace
 import Control.Monad (when)
 import Graphics.Gloss
 import Data.Aeson
+import Data.Aeson.Key
 import Data.Text
 import Control.Applicative
 import Control.Monad
@@ -70,7 +71,8 @@ initBoard bDim bTarg = do
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 
-data World = World { bmps :: Bmps,
+data World = World { 
+  -- bmps :: Bmps,
                      board :: Board,
                      turn :: Col,
                      filePath :: String }      -- Just if file exists, otherwise Nothing
@@ -81,15 +83,27 @@ instance ToJSON World
 
 initWorld :: Int -> Int -> String -> Maybe World -> World
 -- initWorld bDim bTarg filePath "" = 
-initWorld bDim bTarg filePath spec = case spec of 
-                                          Nothing -> World (initBoard bDim bTarg) Black filePath
-                                          Just a -> a
+initWorld bDim bTarg savePath spec = case spec of 
+                                          Nothing -> World (initBoard bDim bTarg) Black savePath
+                                          Just a -> World (board a) (turn a) (filePath a)
 
 data Bmps = Bmps { bl :: Picture,
                    wh :: Picture,
                    sq :: Picture }
   deriving (Show, Generic)
 
+-- instance FromJSON Bmps where
+--   -- parseJSON (Object v) = Bmps <$> v .: "bl" <*> v .: "wh" <*> v .: "sq"
+--   parseJSON _ = mzero
+
+-- instance ToJSON Bmps where
+--   toJSON (Bmps bl wh sq) = 
+--     object [ (fromString "bl") .= (circleSolid 0.5), (fromString "wh") .= (circleSolid 0.5), (fromString "sq") .= (circleSolid 0.5)]
+--   -- toJSON _ = mzero
+
+-- deriving instance Generic Picture
+-- instance FromJSON Picture
+-- instance ToJSON Picture
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
@@ -153,7 +167,7 @@ undoTurn w = do
                 else Prelude.init oBs
       let nWs = wPieces curBoard    
 
-      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
 
     Black -> do 
       let oWs = wPieces curBoard    
@@ -162,7 +176,7 @@ undoTurn w = do
                 else Prelude.init oWs
       let nBs = bPieces curBoard    
 
-      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
 
 undoRound :: World -> World
 undoRound w = do 
@@ -182,7 +196,7 @@ undoRound w = do
                then oWs
                else Prelude.init oWs 
 
-  World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)
+  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)
 {- In these functions
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:

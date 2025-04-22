@@ -97,7 +97,7 @@ main = do
         then do
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) )         -- in Board.hs
-                drawIOWorld               -- in Draw.hs
+                ( drawIOWorld bmps )              -- in Draw.hs
                 handleInputIO             -- in Input.hs
                 updateWorldIO             -- in AI.hs do 
 
@@ -105,7 +105,7 @@ main = do
             spec <- foo (argLoadFilePath composed)
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) )         -- in Board.hs
-                drawIOWorld               -- in Draw.hs
+                ( drawIOWorld bmps )            -- in Draw.hs
                 handleInputIO             -- in Input.hs
                 updateWorldIO             -- in AI.hs  -- in AI.hs
 
@@ -116,8 +116,8 @@ main = do
            <> progDesc "Gomoku: Five-in-a-row, written in haskell!" )
 
 
-drawIOWorld :: World -> IO Picture
-drawIOWorld w = return $ drawWorld w
+drawIOWorld :: Bmps -> World -> IO Picture
+drawIOWorld bmps w = return $ drawWorld bmps w
 -- handleIOInput :: World -> World
 updateWorldIO :: Float -> World -> IO World
 updateWorldIO t w = return $ updateWorld t w
