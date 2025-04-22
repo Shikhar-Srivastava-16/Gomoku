@@ -3,7 +3,7 @@ import Debug.Trace
 import Graphics.Gloss
 
 data Col = Black | White
-  deriving Show
+  deriving (Show, Eq)
 
 other :: Col -> Col
 other Black = White
@@ -161,4 +161,8 @@ For every position ((x, y), col) in the 'pieces' list:
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate = undefined
+evaluate board col
+  | won == Just col = 1
+  | won == Just (other col) = -1
+  | otherwise = 0
+  where won = checkWon board
