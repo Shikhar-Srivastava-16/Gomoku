@@ -70,7 +70,8 @@ initBoard bDim bTarg = do
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 
-data World = World { board :: Board,
+data World = World { bmps :: Bmps,
+                     board :: Board,
                      turn :: Col,
                      filePath :: String }      -- Just if file exists, otherwise Nothing
   deriving (Show, Generic)
@@ -87,6 +88,7 @@ initWorld bDim bTarg filePath spec = case spec of
 data Bmps = Bmps { bl :: Picture,
                    wh :: Picture,
                    sq :: Picture }
+  deriving (Show, Generic)
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
