@@ -51,11 +51,21 @@ handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w
         case newBoard of
             Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") (return $ World b (other $ turn w) (filePath w) )
             Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") (return w)
+
 handleInputIO (EventKey (Char 'u') Up _ _) w
     = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ return $ undoRound w
 
+-- handleInput (EventKey (Char k) Down _ _) b
+--     = trace ("Key " ++ show k ++ " down") b
+-- handleInput (EventKey (Char 'u') Up _ _) w
+--     = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ undoRound w
+
+-- handleInput (EventKey (Char 'b') Up _ _) w
+--     = trace ("Key " ++ show 'b' ++ " up: Undoing one from current player") $ undoTurn w
+
 handleInputIO (EventKey (Char 'b') Up _ _) w
     = trace ("Key " ++ show 'b' ++ " up: Undoing one from current player") $ return $ undoTurn w
+    
 handleInputIO (EventKey (Char 's') Up _ _) w
     = trace ("Key " ++ show 's' ++ " up: saving") $ do 
                                                      a <- saveWorld w (filePath w)

@@ -2,6 +2,7 @@ module Main where
 
 import Debug.Trace
 import Graphics.Gloss
+import Graphics.Gloss.Data.Bitmap
 import System.Environment
 import Options.Applicative
 import Graphics.Gloss.Interface.IO.Game
@@ -82,13 +83,18 @@ cliParser = CLIArgs
             <> metavar "<LOAD FILE>"
             <> help "if this argument is passed in, the game will load a save" )
 
-
 main :: IO ()
 main = do
+    -- bitmapDataOfBMP?
+    bl <- loadBMP "res/bl.bmp"
+    wh <- loadBMP "res/wh.bmp"
+    sq <- loadBMP "res/sq.bmp"
+
+    let bmps = Bmps bl wh sq
     composed <- execParser cliargs
+
     if ((argLoadFilePath composed) == "!!none!!") 
         then do
-            -- spec <- foo (argLoadFilePath composed)
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) )         -- in Board.hs
                 drawIOWorld               -- in Draw.hs
@@ -101,7 +107,8 @@ main = do
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) )         -- in Board.hs
                 drawIOWorld               -- in Draw.hs
                 handleInputIO             -- in Input.hs
-                updateWorldIO             -- in AI.hs
+                updateWorldIO             -- in AI.hs  -- in AI.hs
+
     where
         cliargs = info (cliParser <**> helper)
             ( fullDesc

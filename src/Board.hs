@@ -2,8 +2,9 @@
 module Board where
 
 import Debug.Trace
-import Control.Monad (when)
 
+import Control.Monad (when)
+import Graphics.Gloss
 import Data.Aeson
 import Data.Text
 import Control.Applicative
@@ -12,10 +13,11 @@ import qualified Data.ByteString.Lazy as B
 import GHC.Generics
 
 data Col = Black | White
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 instance FromJSON Col
 instance ToJSON Col
+
 
 other :: Col -> Col
 other Black = White
@@ -67,6 +69,7 @@ initBoard bDim bTarg = do
 -- Feel free to extend this, and 'Board' above with anything you think
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
+
 data World = World { board :: Board,
                      turn :: Col,
                      filePath :: String }      -- Just if file exists, otherwise Nothing
@@ -81,16 +84,9 @@ initWorld bDim bTarg filePath spec = case spec of
                                           Nothing -> World (initBoard bDim bTarg) Black filePath
                                           Just a -> a
 
-{--
- - pTurn
- - parse (string "Board")
- - parse space
- - parse {
- - parse tileSize; size; target; each have a number
- - parse buttonLoci; wPieces; bPieces; each have lists
- --}
-
--- pAny = parse (string "Black" <|> string "White") -- will always have one of these
+data Bmps = Bmps { bl :: Picture,
+                   wh :: Picture,
+                   sq :: Picture }
 
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
@@ -154,7 +150,8 @@ undoTurn w = do
                 then oBs
                 else Prelude.init oBs
       let nWs = wPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+
+      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
 
     Black -> do 
       let oWs = wPieces curBoard    
@@ -162,7 +159,9 @@ undoTurn w = do
                 then oWs
                 else Prelude.init oWs
       let nBs = bPieces curBoard    
-      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+
+      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+
 undoRound :: World -> World
 undoRound w = do 
   {-- 
@@ -181,8 +180,7 @@ undoRound w = do
                then oWs
                else Prelude.init oWs 
 
-  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)
-
+  World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)
 {- In these functions
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:
@@ -194,14 +192,15 @@ For every position ((x, y), col) in the 'pieces' list:
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate = undefined
-
 -- saveWorld :: World -> String -> IO ()
 writeWorldToJSON :: FilePath -> World -> IO ()
-writeWorldToJSON path world = B.writeFile path (encode world)
+evaluate board col
+  | won == Just col = 1
+  | won == Just (other col) = -1
+  | otherwise = 0
+  where won = checkWon board
 
+writeWorldToJSON path world = B.writeFile path (encode world)
 saveWorld w filePath = do
   writeWorldToJSON filePath w
   
-    -- writeFile filePath $ (show $ turn w) ++ "\n"
-    -- appendFile filePath $ show $ board w

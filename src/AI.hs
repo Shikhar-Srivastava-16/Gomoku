@@ -11,7 +11,11 @@ data GameTree = GameTree { game_board :: Board,
 -- type generationFunction = Board -> Col -> [Position]
 
 gen :: Board -> Col -> [Position] 
-gen board curTurn = []
+gen board _ =
+  let
+      filledPositions = wPieces board ++ bPieces board
+  in filter (\p -> notElem p filledPositions) (buttonLoci board)
+
 -- do
 --   let list = buttonLoci board
 --   let toRem1 = Set.toList $ wPieces board
@@ -55,17 +59,28 @@ getBestMove :: Int -- ^ Maximum search depth
                -> Position
 getBestMove depth tree = (125.0, 125.0)
 
--- Update the world state after some time has passed
-updateWorld :: Float -- ^ time since last update (you can ignore this)
-            -> World -- ^ current world state
-            -> World
-updateWorld t w =
-  do
-  let won = checkWon $ board w
-  case won of
-    Nothing -> trace("No Win") w
-    Just Black -> trace("Bl Win") w
-    Just White -> trace("Wh Win") w 
+-- -- Update the world state after some time has passed
+-- updateWorld :: Float -- ^ time since last update (you can ignore this)
+--             -> World -- ^ current world state
+--             -> World
+-- updateWorld t w =
+--   do
+--   let won = checkWon $ board w
+--   case won of
+--     Nothing -> trace("No Win") w
+--     Just Black -> trace("Bl Win") w
+--     Just White -> trace("Wh Win") w 
+
+updateWorld :: Float -> World -> World
+updateWorld t w
+  | checkWon (board w) == Just Black = trace "Bl Win" w
+  | checkWon (board w) == Just White = trace "Wh Win" w
+  | null allPossibleMoves = trace "error generating moves or none valid" w
+  | turn w == Black = case makeMove (board w) (turn w) (head allPossibleMoves) of
+                          Just validBoard -> World { bmps = bmps w, board = validBoard, turn = other (turn w)}
+                          Nothing -> trace "ai error" w
+  | otherwise = trace ("No Win") w
+  where allPossibleMoves = gen (board w) (turn w)
 
  -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
  -- -- now make new board
