@@ -86,14 +86,22 @@ cliParser = CLIArgs
 main :: IO ()
 main = do
     composed <- execParser cliargs
-    spec <- foo (argLoadFilePath composed)
+    if ((argLoadFilePath composed) == "!!none!!") 
+        then do
+            -- spec <- foo (argLoadFilePath composed)
+            playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
+                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) )         -- in Board.hs
+                drawIOWorld               -- in Draw.hs
+                handleInputIO             -- in Input.hs
+                updateWorldIO             -- in AI.hs do 
 
-
-    playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
-        ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (spec) )         -- in Board.hs
-        drawIOWorld               -- in Draw.hs
-        handleInputIO             -- in Input.hs
-        updateWorldIO             -- in AI.hs
+        else do
+            spec <- foo (argLoadFilePath composed)
+            playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
+                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) )         -- in Board.hs
+                drawIOWorld               -- in Draw.hs
+                handleInputIO             -- in Input.hs
+                updateWorldIO             -- in AI.hs
     where
         cliargs = info (cliParser <**> helper)
             ( fullDesc

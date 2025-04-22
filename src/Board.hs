@@ -75,10 +75,11 @@ data World = World { board :: Board,
 instance FromJSON World
 instance ToJSON World
 
-initWorld :: Int -> Int -> String -> World -> World
--- initWorld bDim bTarg filePath "" = World (initBoard bDim bTarg) Black filePath
-initWorld bDim bTarg filePath spec = spec
-
+initWorld :: Int -> Int -> String -> Maybe World -> World
+-- initWorld bDim bTarg filePath "" = 
+initWorld bDim bTarg filePath spec = case spec of 
+                                          Nothing -> World (initBoard bDim bTarg) Black filePath
+                                          Just a -> a
 
 {--
  - pTurn
