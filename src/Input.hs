@@ -74,7 +74,7 @@ handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w
         let newBoard = makeMove (board w) (turn w) selectedPos
 
         case newBoard of
-           Just b -> trace ("Left click " ++ show (x,y) ++ " snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved.") return $ World b (other $ turn w) (filePath w)
+           Just b -> trace ("Left click " ++ show (x,y) ++ " snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved.") return $ World (won w) b (other $ turn w) (filePath w)
            Nothing -> trace ("Left click " ++ show (x,y) ++ " !!Invalid Move!!") $ return w
 
 handleInputIO (EventKey (Char 'u') Up _ _) w
