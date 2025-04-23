@@ -89,8 +89,10 @@ main = do
     bl <- loadBMP "res/bl.bmp"
     wh <- loadBMP "res/wh.bmp"
     sq <- loadBMP "res/sq.bmp"
+    wwin <- loadBMP "res/wwin.bmp"
+    bwin <- loadBMP "res/bwin.bmp"
 
-    let bmps = Bmps bl wh sq
+    let bmps = Bmps bl wh sq wwin bwin
     composed <- execParser cliargs
 
     if ((argLoadFilePath composed) == "!!none!!") 

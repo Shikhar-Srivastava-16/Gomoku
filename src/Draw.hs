@@ -13,8 +13,13 @@ import System.IO.Unsafe
 -- as a grid plus pieces.
 drawWorld :: Bmps -> World -> Picture
 drawWorld bmps w = do
-    let bDims = fromIntegral $ size $ board w
-    Pictures (drawBmpGrid bmps w)
+    if (won w)
+        then case (turn w) of
+            White -> bwin bmps
+            Black -> wwin bmps
+        else do  
+            let bDims = fromIntegral $ size $ board w
+            Pictures (drawBmpGrid bmps w)
     -- Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
 
 -- Old drawGrid function for drawing purely rather than with bitmap images

@@ -88,16 +88,16 @@ minimax depth (GameTree board playerTurn possibleMoves)
 
 updateWorld :: Float -> World -> World
 updateWorld t w = do
-  let retval | checkWon (board w) == Just Black = trace "Bl Win" w -- TODO exit here
-             | checkWon (board w) == Just White = trace "Wh Win" w -- TODO exit here
+  let retval | checkWon (board w) == Just Black = trace ("Bl Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w)) -- TODO exit here
+             | checkWon (board w) == Just White = trace ("Wh Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w)) -- TODO exit here
              | null allPossibleMoves = trace "error generating moves or none valid" w
              | turn w == Black = case makeMove (board w) (turn w) (head allPossibleMoves) of
-                                 Just validBoard -> World {  board = validBoard, turn = other (turn w), filePath = filePath w}
+                                 Just validBoard -> World { won = (won w), board = validBoard, turn = other (turn w), filePath = filePath w}
                                  Nothing -> trace "ai error" w
              | otherwise = trace ("No Win, checking turn is in time limit") w
              where allPossibleMoves = gen (board w) (turn w)
   if (turn w /= turn retval) -- then AI has made a move and swapped turns to player, no need to check for timeout
-    then retval
+    then trace ("returning retval") retval
     else do
       let currentTime = unsafePerformIO $ getCurrentTime
       let turnDuration = realToFrac $ diffUTCTime currentTime (turnStartTime (board w))
@@ -106,9 +106,11 @@ updateWorld t w = do
         then do
           let currentBoard = board w
           let newTimingBoard = Board (tileSize currentBoard) (size currentBoard) (target currentBoard) (currentTime) (currentTime) (False) (buttonLoci currentBoard) (wPieces currentBoard) (bPieces currentBoard)
-          trace ("took too long for turn, handing it over!") World {  board = (newTimingBoard), turn = other (turn w), filePath = filePath w }
-        else
-          w
+          trace ("took too long for turn, handing it over!") World { won = (won w), board = (newTimingBoard), turn = other (turn w), filePath = filePath w }
+        else do
+          if won retval 
+            then retval
+            else w
  -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
  -- -- now make new board
  -- let newBoard = makeMove (board w) (turn w) newPos
