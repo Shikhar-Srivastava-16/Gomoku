@@ -74,23 +74,23 @@ handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w
         let newBoard = makeMove (board w) (turn w) selectedPos
 
         case newBoard of
-           Just b -> trace ("Left click " ++ show (x,y) ++ " snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved.") return $ World (won w) b (other $ turn w) (filePath w)
+           Just b -> trace ("Left click " ++ show (x,y) ++ " snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved.") return $ World (won w) b (other $ turn w) (filePath w) Nothing
            Nothing -> trace ("Left click " ++ show (x,y) ++ " !!Invalid Move!!") $ return w
 
 handleInputIO (EventKey (Char 'u') Up _ _) w
     = trace ("Undoing one from both") $ return $ undoRound w
 
 handleInputIO (EventKey (Char '.') Up _ _) w
-    = trace ("higher targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) + 1)) (turn w) (filePath w))
+    = trace ("higher targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) + 1)) (turn w) (filePath w) (hint w))
 
 handleInputIO (EventKey (Char ',') Up _ _) w
-    = trace ("lower targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) - 1)) (turn w) (filePath w))
+    = trace ("lower targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) - 1)) (turn w) (filePath w) (hint w))
 
 handleInputIO (EventKey (Char '>') Up _ _) w
-    = trace ("size higher") $ return (World (won w) (initBoard ((size $ board w) + 2) (target $ board w)) (turn w) (filePath w))
+    = trace ("size higher") $ return (World (won w) (initBoard ((size $ board w) + 2) (target $ board w)) (turn w) (filePath w) (hint w))
 
 handleInputIO (EventKey (Char '<') Up _ _) w
-    = trace ("size lower") $ return (World (won w) (initBoard ((size $ board w)) (target $ board w)) (turn w) (filePath w))
+    = trace ("size lower") $ return (World (won w) (initBoard ((size $ board w)) (target $ board w)) (turn w) (filePath w) (hint w))
 -- ( Board (tileSize $ board w ) ((size $ board w) - 1) (target $ board w) (buttonLoci $ board w) (nWs) (nBs) )
 handleInputIO (EventKey (Char 'b') Up _ _) w
     = trace ("Undoing one from current player") $ return $ undoTurn w
@@ -101,6 +101,9 @@ handleInputIO (EventKey (Char 's') Up _ _) w
                                                      return w
 handleInputIO (EventKey (Char 'p') Up _ _) w
     = trace ("Toggling Pause") $ return $ togglePause w
+
+handleInputIO (EventKey (Char 'h') Up _ _) w
+    = return w { hint = (calcHint w)} 
 -- other input events
 
 {--

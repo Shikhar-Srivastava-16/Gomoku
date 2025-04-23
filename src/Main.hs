@@ -91,8 +91,9 @@ main = do
     sq <- loadBMP "res/sq.bmp"
     wwin <- loadBMP "res/wwin.bmp"
     bwin <- loadBMP "res/bwin.bmp"
+    hint <- loadBMP "res/hint.bmp"
 
-    let bmps = Bmps bl wh sq wwin bwin
+    let bmps = Bmps bl wh sq wwin bwin hint
     composed <- execParser cliargs
 
     if ((argLoadFilePath composed) == "!!none!!") 

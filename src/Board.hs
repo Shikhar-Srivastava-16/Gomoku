@@ -87,7 +87,8 @@ initBoard bDim bTarg = do
 data World = World { won :: Bool,
                      board :: Board,
                      turn :: Col,
-                     filePath :: String }      -- Just if file exists, otherwise Nothing
+                     filePath :: String,
+                     hint :: Maybe Position }      -- Just if file exists, otherwise Nothing
   deriving (Show, Generic)
 
 instance FromJSON World
@@ -96,14 +97,15 @@ instance ToJSON World
 initWorld :: Int -> Int -> String -> Maybe World -> World
 -- initWorld bDim bTarg filePath "" = 
 initWorld bDim bTarg savePath spec = case spec of 
-                                          Nothing -> World (False) (initBoard bDim bTarg) Black savePath
-                                          Just a -> World (won a) (board a) (turn a) (filePath a)
+                                          Nothing -> World (False) (initBoard bDim bTarg) Black savePath Nothing
+                                          Just a -> World (won a) (board a) (turn a) (filePath a) Nothing
 
 data Bmps = Bmps { bl :: Picture,
                    wh :: Picture,
                    sq :: Picture,
                    wwin :: Picture,
-                   bwin :: Picture }
+                   bwin :: Picture,
+                   hintPic :: Picture }
   deriving (Show, Generic)
 
 -- instance FromJSON Bmps where
@@ -240,8 +242,7 @@ undoTurn w = do
                 then oBs
                 else Prelude.init oBs
       let nWs = wPieces curBoard    
-      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
-      -- World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w) Nothing
 
     Black -> do 
       let oWs = wPieces curBoard    
@@ -250,7 +251,7 @@ undoTurn w = do
                 else Prelude.init oWs
       let nBs = bPieces curBoard    
 
-      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w) Nothing
 
 
 togglePause :: World -> World
@@ -261,11 +262,9 @@ togglePause w = do
     then do
     let pauseDuration = diffUTCTime currentTime (turnPausedStartTime curBoard)
     let pauseOffsetStart = addUTCTime pauseDuration (turnStartTime curBoard)
-    World (won w) (Board (tileSize curBoard) (size curBoard) (target curBoard) (pauseOffsetStart) (currentTime) (False) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w)
-    -- World (bmps w) (Board (tileSize curBoard) (size curBoard) (target curBoard) (pauseOffsetStart) (currentTime) (False) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w)
+    World (won w) (Board (tileSize curBoard) (size curBoard) (target curBoard) (pauseOffsetStart) (currentTime) (False) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w) Nothing
   else
-    World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (currentTime) (True) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w)
-    -- World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (currentTime) (True) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w)
+    World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (currentTime) (True) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w) Nothing
 
 undoRound :: World -> World
 undoRound w = do 
@@ -285,7 +284,7 @@ undoRound w = do
                then oWs
                else Prelude.init oWs 
 
-  World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)-- TODO set current and paused time to current time - 10 for fair replay
+  World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w) Nothing-- TODO set current and paused time to current time - 10 for fair replay
 
 {- In these functions:
 To check for a line of n in a row in a direction D:
@@ -307,10 +306,10 @@ saveWorld w filePath = do
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate board col = do-- 2 for won, 0 for lost, 1 for still deciding
-  case checkWon board of
-    Nothing -> 10
-    Just col' -> if col' == col then 20 else 0
+evaluate board _
+  | hasWon board White = -1
+  | hasWon board Black = 1
+  | otherwise = 0
 
 evalTie :: Board -> Col -> Int
 evalTie board col = undefined
