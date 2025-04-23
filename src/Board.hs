@@ -1,6 +1,9 @@
 module Board where
 import Debug.Trace
 import Graphics.Gloss
+import Data.Time.Clock (getCurrentTime, diffUTCTime, addUTCTime)
+import qualified Data.Time.Clock as Clock
+import System.IO.Unsafe
 
 data Col = Black | White
   deriving (Show, Eq)
@@ -26,6 +29,9 @@ type Position = (Float, Float)
 data Board = Board { tileSize :: Int,
                      size :: Int,
                      target :: Int,
+                     turnStartTime :: Clock.UTCTime,
+                     turnPausedStartTime :: Clock.UTCTime,
+                     paused :: Bool,
                      buttonLoci :: [Position],
                      wPieces :: [Position],
                      bPieces :: [Position] }
@@ -41,9 +47,10 @@ btloci bDims tSize = do
 initBoard bDim bTarg = do
   let bDimension = (bDim - 1)            -- 1 less than the actual dimension on the board
   let tileSize = 50
+  let currentTime = unsafePerformIO $ getCurrentTime
   let target = bTarg
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
-  Board tileSize bDimension target loci [] []
+  Board tileSize bDimension target currentTime currentTime False loci [] []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -125,7 +132,7 @@ undoTurn w = do
                 then oBs
                 else init oBs
       let nWs = wPieces curBoard    
-      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
 
     Black -> do 
       let oWs = wPieces curBoard    
@@ -133,7 +140,20 @@ undoTurn w = do
                 then oWs
                 else init oWs
       let nBs = bPieces curBoard    
-      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+
+togglePause :: World -> World
+togglePause w = do
+  let curBoard = board w
+  let currentTime = unsafePerformIO $ getCurrentTime
+  if paused (board w)
+    then do
+    let pauseDuration = diffUTCTime currentTime (turnPausedStartTime curBoard)
+    let pauseOffsetStart = addUTCTime pauseDuration (turnStartTime curBoard)
+    World (bmps w) (Board (tileSize curBoard) (size curBoard) (target curBoard) (pauseOffsetStart) (currentTime) (False) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w)
+  else
+    World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (currentTime) (True) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w)
+
 undoRound :: World -> World
 undoRound w = do 
   {-- 
@@ -152,7 +172,7 @@ undoRound w = do
                then oWs
                else init oWs 
 
-  World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w)
+  World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) -- TODO set current and paused time to current time - 10 for fair replay
 
 {- In these functions:
 To check for a line of n in a row in a direction D:

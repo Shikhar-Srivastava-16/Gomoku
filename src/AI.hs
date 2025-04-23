@@ -3,6 +3,9 @@ module AI where
 import Lists
 import Board
 import Debug.Trace
+import Data.Time.Clock (getCurrentTime, diffUTCTime)
+import qualified Data.Time.Clock as Clock
+import System.IO.Unsafe
 
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
@@ -72,16 +75,28 @@ getBestMove depth tree = (125.0, 125.0)
 --     Just White -> trace("Wh Win") w 
 
 updateWorld :: Float -> World -> World
-updateWorld t w
-  | checkWon (board w) == Just Black = trace "Bl Win" w
-  | checkWon (board w) == Just White = trace "Wh Win" w
-  | null allPossibleMoves = trace "error generating moves or none valid" w
-  | turn w == Black = case makeMove (board w) (turn w) (head allPossibleMoves) of
-                          Just validBoard -> World { bmps = bmps w, board = validBoard, turn = other (turn w)}
-                          Nothing -> trace "ai error" w
-  | otherwise = trace ("No Win") w
-  where allPossibleMoves = gen (board w) (turn w)
+updateWorld t w = do
+  let retval | checkWon (board w) == Just Black = trace "Bl Win" w -- TODO exit here
+             | checkWon (board w) == Just White = trace "Wh Win" w -- TODO exit here
+             | null allPossibleMoves = trace "error generating moves or none valid" w
+             | turn w == Black = case makeMove (board w) (turn w) (head allPossibleMoves) of
+                                 Just validBoard -> World { bmps = bmps w, board = validBoard, turn = other (turn w)}
+                                 Nothing -> trace "ai error" w
+             | otherwise = trace ("No Win, checking turn is in time limit") w
+             where allPossibleMoves = gen (board w) (turn w)
+  if (turn w /= turn retval) -- then AI has made a move and swapped turns to player, no need to check for timeout
+    then retval
+    else do
+      let currentTime = unsafePerformIO $ getCurrentTime
+      let turnDuration = realToFrac $ diffUTCTime currentTime (turnStartTime (board w))
 
+      if (turnDuration > 10) && not (paused (board w)) -- todo change to modular
+        then do
+          let currentBoard = board w
+          let newTimingBoard = Board (tileSize currentBoard) (size currentBoard) (target currentBoard) (currentTime) (currentTime) (False) (buttonLoci currentBoard) (wPieces currentBoard) (bPieces currentBoard)
+          trace ("took too long for turn, handing it over!") World { bmps = bmps w, board = (newTimingBoard), turn = other (turn w) }
+        else
+          w
  -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
  -- -- now make new board
  -- let newBoard = makeMove (board w) (turn w) newPos

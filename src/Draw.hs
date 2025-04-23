@@ -2,6 +2,9 @@ module Draw(drawWorld) where
 
 import Graphics.Gloss
 import Board
+import Data.Time.Clock (getCurrentTime, diffUTCTime)
+import qualified Data.Time.Clock as Clock
+import System.IO.Unsafe
 
 -- Given a world state, return a Picture which will render the world state.
 -- Currently just draws a single blue circle as a placeholder.
@@ -10,7 +13,6 @@ import Board
 -- as a grid plus pieces.
 drawWorld :: World -> Picture
 drawWorld w = do
-    let bDims = fromIntegral $ size $ board w
     Pictures $ drawBmpGrid w
     -- Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
 
