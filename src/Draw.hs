@@ -28,7 +28,7 @@ drawGrid tSize bDims wPieces bPieces = do
     [ Color white $ Line locus | locus <- loci ] ++ wPics ++ bPics
 
 drawBmpGrid bmps w = do
-    let wPics = [ translate xi yi (scale 0.06 0.06 $ wh bmps) | (xi, yi) <- wPieces $ board w]
+    let wPics = [ translate xi yi (scale 0.08 0.08 $ wh bmps) | (xi, yi) <- wPieces $ board w]
     let bPics = [ translate xi yi (scale 0.04 0.04 $ bl bmps) | (xi, yi) <- bPieces $ board w]
     let loci = [ translate xi yi (scale 0.5 0.5 $ sq bmps) | (xi, yi) <- buttonLoci $ board w]  
     
