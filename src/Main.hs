@@ -34,7 +34,7 @@ import Parsing
 -- and, if it is an AI's turn, should update the board with an AI generated
 -- move
 
--- parser library: https://hackage.haskell.org/package/optparse-applicative
+-- parser library for CLI flags: https://hackage.haskell.org/package/optparse-applicative
 data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int, 
                          argSpd :: Int,
