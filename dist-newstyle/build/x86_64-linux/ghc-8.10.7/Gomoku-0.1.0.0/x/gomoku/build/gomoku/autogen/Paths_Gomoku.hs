@@ -29,12 +29,12 @@ version :: Version
 version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
-bindir     = "/home/jm552/.cabal/bin"
-libdir     = "/home/jm552/.cabal/lib/x86_64-linux-ghc-8.10.7/Gomoku-0.1.0.0-inplace-gomoku"
-dynlibdir  = "/home/jm552/.cabal/lib/x86_64-linux-ghc-8.10.7"
-datadir    = "/home/jm552/.cabal/share/x86_64-linux-ghc-8.10.7/Gomoku-0.1.0.0"
-libexecdir = "/home/jm552/.cabal/libexec/x86_64-linux-ghc-8.10.7/Gomoku-0.1.0.0"
-sysconfdir = "/home/jm552/.cabal/etc"
+bindir     = "/home/ss504/.cabal/bin"
+libdir     = "/home/ss504/.cabal/lib/x86_64-linux-ghc-8.10.7/Gomoku-0.1.0.0-inplace-gomoku"
+dynlibdir  = "/home/ss504/.cabal/lib/x86_64-linux-ghc-8.10.7"
+datadir    = "/home/ss504/.cabal/share/x86_64-linux-ghc-8.10.7/Gomoku-0.1.0.0"
+libexecdir = "/home/ss504/.cabal/libexec/x86_64-linux-ghc-8.10.7/Gomoku-0.1.0.0"
+sysconfdir = "/home/ss504/.cabal/etc"
 
 getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath
 getBinDir = catchIO (getEnv "Gomoku_bindir") (\_ -> return bindir)

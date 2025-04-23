@@ -1,15 +1,34 @@
+{-# LANGUAGE DeriveGeneric, StandaloneDeriving #-}
 module Board where
+
 import Debug.Trace
-import qualified Data.Set as Set
+
+import Control.Monad (when)
+import Graphics.Gloss
+import Data.Aeson
+import Data.Aeson.Key
+import Data.Text
+import Control.Applicative
+import Control.Monad
+import qualified Data.ByteString.Lazy as B
+import GHC.Generics
 
 data Col = Black | White
-  deriving (Eq, Show)
+  deriving (Show, Generic, Eq)
+
+instance FromJSON Col
+instance ToJSON Col
+
 
 other :: Col -> Col
 other Black = White
 other White = Black
 
 type Position = (Float, Float)
+  -- deriving (Show, Generic)
+
+-- instance FromJSON Position
+-- instance ToJSON Position
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -23,9 +42,12 @@ data Board = Board { tileSize :: Int,
                      size :: Int,
                      target :: Int,
                      buttonLoci :: [Position],
-                     wPieces :: Set.Set Position,
-                     bPieces :: Set.Set Position }
-  deriving Show
+                     wPieces :: [Position],
+                     bPieces :: [Position] }
+  deriving (Show, Generic)
+
+instance FromJSON Board
+instance ToJSON Board
 
 btloci :: Float -> Float -> [Position]
 btloci bDims tSize = do
@@ -39,7 +61,7 @@ initBoard bDim bTarg = do
   let tileSize = 50
   let target = bTarg
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
-  Board tileSize bDimension target loci (Set.fromList []) (Set.fromList [])
+  Board tileSize bDimension target loci [] []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -48,27 +70,51 @@ initBoard bDim bTarg = do
 -- Feel free to extend this, and 'Board' above with anything you think
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
-data World = World { board :: Board,
-                     turn :: Col }
 
-initWorld bDim bTarg = World (initBoard bDim bTarg) Black
+data World = World { 
+                     board :: Board,
+                     turn :: Col,
+                     filePath :: String }      -- Just if file exists, otherwise Nothing
+  deriving (Show, Generic)
 
+instance FromJSON World
+instance ToJSON World
+
+initWorld :: Int -> Int -> String -> Maybe World -> World
+-- initWorld bDim bTarg filePath "" = 
+initWorld bDim bTarg savePath spec = case spec of 
+                                          Nothing -> World (initBoard bDim bTarg) Black savePath
+                                          Just a -> World (board a) (turn a) (filePath a)
+
+data Bmps = Bmps { bl :: Picture,
+                   wh :: Picture,
+                   sq :: Picture }
+  deriving (Show, Generic)
+
+-- instance FromJSON Bmps where
+--   -- parseJSON (Object v) = Bmps <$> v .: "bl" <*> v .: "wh" <*> v .: "sq"
+--   parseJSON _ = mzero
+
+-- instance ToJSON Bmps where
+--   toJSON (Bmps bl wh sq) = 
+--     object [ (fromString "bl") .= (circleSolid 0.5), (fromString "wh") .= (circleSolid 0.5), (fromString "sq") .= (circleSolid 0.5)]
+--   -- toJSON _ = mzero
+
+-- deriving instance Generic Picture
+-- instance FromJSON Picture
+-- instance ToJSON Picture
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
--- TODO: Validate :
---                Invalid if position not in buttonLoci               :: trying to place something off the board
---                else Invalid if position in wPieces                 :: trying to place something where there is already a piece
---                else Invalid if position in bPieces                 :: trying to place something where there is already a piece
 makeMove oldBoard curTurn newPosition = do
   if not (newPosition `elem` (trace ("buttons: " ++ show (buttonLoci oldBoard)) (buttonLoci oldBoard)) ) then
     Nothing -- Position is not a valid board spot
-  else if newPosition `Set.member` wPieces oldBoard || newPosition `Set.member` bPieces oldBoard then
+  else if newPosition `elem` wPieces oldBoard || newPosition `elem` bPieces oldBoard then
     Nothing -- Position already taken by another piece
   else
     case curTurn of
-      Black -> Just $ oldBoard { bPieces = Set.insert newPosition (bPieces oldBoard) }
-      White -> Just $ oldBoard { wPieces = Set.insert newPosition (wPieces oldBoard) }
+      Black -> Just $ oldBoard { bPieces = (bPieces oldBoard) ++ [newPosition] }
+      White -> Just $ oldBoard { wPieces = (wPieces oldBoard) ++ [newPosition] }
 -- Check whether the board is in a winning state for either player.
 -- Returns 'Nothing' if neither player has won yet
 -- Returns 'Just c' if the player 'c' has won
@@ -95,17 +141,74 @@ hasWon board col =
 
     countLine (x, y) (xoffset, yoffset) count =
       let checkPos = (x + xoffset, y + yoffset)
-      in if checkPos `Set.member` pieces
+      in if checkPos `elem` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
          else count
-  in any (\pos -> any (shouldCheckLine pos) directions) (Set.toList pieces)
-{- In these functions:
+  in Prelude.any (\pos -> Prelude.any (shouldCheckLine pos) directions) (pieces)
+
+{-- 
+ - Check world turn
+ - black => change black piece set
+ - white => change white piece set
+--}
+undoTurn :: World -> World
+undoTurn w = do
+  let curBoard = board w
+  case (turn w) of
+    White -> do
+      let oBs = bPieces curBoard    
+      let nBs = if (oBs == [])
+                then oBs
+                else Prelude.init oBs
+      let nWs = wPieces curBoard    
+
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+
+    Black -> do 
+      let oWs = wPieces curBoard    
+      let nWs = if (oWs == [])
+                then oWs
+                else Prelude.init oWs
+      let nBs = bPieces curBoard    
+
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+
+undoRound :: World -> World
+undoRound w = do 
+  {-- 
+  - remove latest from both
+  - so, newBs = Prelude.init Bs
+       newWs = Prelude.init Ws
+  --}
+  let curBoard = board w
+  let oBs = bPieces curBoard
+  let oWs = wPieces curBoard
+  let nBs = if (oBs == [])
+               then oBs
+               else Prelude.init oBs 
+   
+  let nWs = if (oWs == [])
+               then oWs
+               else Prelude.init oWs 
+
+  World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w)
+{- In these functions
 To check for a line of n in a row in a direction D:
 For every position ((x, y), col) in the 'pieces' list:
 - if n == 1, the colour 'col' has won
 - if n > 1, move one step in direction D, and check for a line of
   n-1 in a row.
 -}
+
+writeWorldToJSON :: FilePath -> World -> IO ()
+writeWorldToJSON path world = B.writeFile path (encode world)
+
+saveWorld w filePath = do
+  if filePath == "!!none!!"
+    then error "Malformed file path provided, please do not use reserved keyword '!!none!!'"
+    else do
+      writeWorldToJSON filePath w
+  
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
