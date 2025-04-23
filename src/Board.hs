@@ -125,8 +125,7 @@ makeMove oldBoard curTurn newPosition = do
   if not (newPosition `elem` (trace ("buttons: " ++ show (buttonLoci oldBoard)) (buttonLoci oldBoard)) ) then
     Nothing -- Position is not a valid board spot
   else if newPosition `elem` wPieces oldBoard || newPosition `elem` bPieces oldBoard then
-    Nothing -- Position already taken by another piece
-  -- else if True && -- 3 and 3 rule, cannot make two open 3 long rows
+    Nothing -- Position already taken by another piece -- else if True && -- 3 and 3 rule, cannot make two open 3 long rows
   else if (hasFourByFour oldBoard curTurn newPosition)-- 4 and 4 rule, cannot make two 4 long rows
     Nothing
   else do
