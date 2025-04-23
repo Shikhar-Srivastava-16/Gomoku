@@ -78,7 +78,7 @@ cliParser = CLIArgs
             <> help "Where the game gets saved (if save is run)" )
          <*> strOption
              ( long "load"
-            <> short 'l'
+            <> short 'l'                              
             <> value "!!none!!"
             <> metavar "<LOAD FILE>"
             <> help "if this argument is passed in, the game will load a save" )
@@ -95,7 +95,7 @@ main = do
 
     if ((argLoadFilePath composed) == "!!none!!") 
         then do
-            playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
+            playIO (InWindow "Gomoku" (640, 480) (10, 10)) (makeColor 1 0.85 0.5 1) (argSpd composed)
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) )         -- in Board.hs
                 ( drawIOWorld bmps )              -- in Draw.hs
                 handleInputIO                     -- in Input.hs
@@ -103,7 +103,7 @@ main = do
 
         else do
             spec <- foo (argLoadFilePath composed)
-            playIO (InWindow "Gomoku" (640, 480) (10, 10)) (light $ light $ black) (argSpd composed)
+            playIO (InWindow "Gomoku" (640, 480) (10, 10)) (makeColor 1 0.85 0.5 1) (argSpd composed)
                 ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) )         -- in Board.hs
                 ( drawIOWorld bmps )            -- in Draw.hs
                 handleInputIO                   -- in Input.hs
