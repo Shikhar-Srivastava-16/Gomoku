@@ -129,7 +129,7 @@ makeMove oldBoard curTurn newPosition = do
   -- else if True && -- 3 and 3 rule, cannot make two open 3 long rows
   else if (hasFourByFour oldBoard curTurn newPosition)-- 4 and 4 rule, cannot make two 4 long rows
     Nothing
-  else
+  else do
     case curTurn of
       Black -> Just $ oldBoard { bPieces = (bPieces oldBoard) ++ [newPosition] }
       White -> Just $ oldBoard { wPieces = (wPieces oldBoard) ++ [newPosition] }
