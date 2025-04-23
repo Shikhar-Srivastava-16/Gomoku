@@ -77,31 +77,20 @@ minimax depth (GameTree board playerTurn possibleMoves)
   |  playerTurn == Black = maximumBy (comparing fst) evalSubPositions
   | otherwise = minimumBy (comparing fst) evalSubPositions
   where 
-    evalSubPositions = [ (fst (minimax (depth - 1) subtree), pos) | (pos, subtree) <- possibleMoves]
+    evalSubPositions = [(fst (minimax (depth-1) subtree), pos) | (pos, subtree) <- possibleMoves]
 
 -- -- Update the world state after some time has passed
--- updateWorld :: Float -- ^ time since last update (you can ignore this)
---             -> World -- ^ current world state
---             -> World
--- updateWorld t w =
---   do
---   let won = checkWon $ board w
---   case won of
---     Nothing -> trace("No Win") w
---     Just Black -> trace("Bl Win") w
---     Just White -> trace("Wh Win") w 
-
 updateWorld :: Float -> World -> World
 updateWorld t w = do
   if (won w) then w
     else do
-      let retval | checkWon (board w) == Just Black = trace ("Bl Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing) -- TODO exit here
-                | checkWon (board w) == Just White = trace ("Wh Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing) -- TODO exit here
+      let retval | checkWon (board w) == Just Black = trace ("Bl Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
+                | checkWon (board w) == Just White = trace ("Wh Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
                 | null allPossibleMoves = trace "error generating moves or none valid" $ w
                 | turn w == Black = 
-                  let bestMove = getBestMove 4 (buildTree gen (board w) Black)
+                  let bestMove = getBestMove (aiLevel w) (buildTree gen (board w) Black)
                   in case makeMove (board w) (turn w) bestMove of
-                                    Just validBoard -> World { won = (won w), board = validBoard, turn = other (turn w), filePath = filePath w, hint = Nothing}
+                                    Just validBoard -> World { won = (won w), board = validBoard, turn = other (turn w), filePath = filePath w, hint = Nothing, aiLevel = (aiLevel w)}
                                     Nothing -> trace "ai error" w
                 | otherwise = trace ("No Win, checking turn is in time limit") w
                 where allPossibleMoves = gen (board w) (turn w)
@@ -122,6 +111,8 @@ updateWorld t w = do
               if won retval 
                 then retval
                 else w
+
+
  -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
  -- -- now make new board
  -- let newBoard = makeMove (board w) (turn w) newPos
@@ -147,4 +138,4 @@ updateWorld t w = do
 calcHint :: World -> Maybe Position
 calcHint w =
     let tree = (buildTree gen (board w) (turn w))
-    in Just (getBestMove 2 tree)
+    in Just (getBestMove (aiLevel w) tree)
