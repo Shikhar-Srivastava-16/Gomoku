@@ -87,7 +87,7 @@ updateWorld t w = do
       let retval | checkWon (board w) == Just Black = trace ("Bl Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
                 | checkWon (board w) == Just White = trace ("Wh Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
                 | null allPossibleMoves = trace "error generating moves or none valid" $ w
-                | turn w == Black = 
+                | turn w == Black && aiLevel w > 0 = 
                   let bestMove = getBestMove (aiLevel w) (buildTree gen (board w) Black)
                   in case makeMove (board w) (turn w) bestMove of
                                     Just validBoard -> World { won = (won w), board = validBoard, turn = other (turn w), filePath = filePath w, hint = Nothing, aiLevel = (aiLevel w)}

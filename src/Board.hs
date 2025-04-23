@@ -151,12 +151,12 @@ which specifically check for lines in all 8 possible directions
 (NW, N, NE, E, W, SE, SW) -}
 
 hasThreeAndThree :: Board -> Col -> Position -> Bool
-hasThreeAndThree :: Board -> Col -> Position -> Bool
+hasThreeAndThree board col pos = a
   where
     positiveDirections = [(0, 50), (50,50), (50, 0), (50, -50)]
     -- take this position, count its line length in one direction
     -- count it in the opposite direction, add, + 1 for itself
-    totalDirectionLengths = Prelude.map (countLineBothEnds board col pos) (positiveDirections)
+    totalDirectionLengths = Prelude.map (countLinePickyBothEnds board col pos) (positiveDirections)
     -- if equals 4, add to fourRowCount
     fourRowCount = Prelude.length (Prelude.filter (== 3) totalDirectionLengths)
     -- return fourRowCount >= 2
@@ -177,9 +177,9 @@ hasFourAndFour board col pos = a
 countLineBothEnds b c (x, y) (xoffset, yoffset) = countLine b c (x, y) (xoffset, yoffset) ( (countLine b c (x, y) ( -(xoffset), -(yoffset) ) 1) )
 
 countLinePickyBothEnds b c (x, y) (xoffset, yoffset) = do
-  let firstCount = countLinePickyWithEnds b c (x, y) ( -(xoffset), -(yoffset) ) 1
+  let firstCount = countLinePickyWithEnd b c (x, y) ( -(xoffset), -(yoffset) ) 1
   if firstCount == 0 then 0
-  else countLinePickyWithEnds b c (x, y) (xoffset, yoffset) ( firstCount )
+  else countLinePickyWithEnd b c (x, y) (xoffset, yoffset) ( firstCount )
 
 countLine :: Board -> Col -> Position -> Position -> Int -> Int
 countLine board col (x, y) (xoffset, yoffset) count =
@@ -192,20 +192,20 @@ countLine board col (x, y) (xoffset, yoffset) count =
                 White -> wPieces board
                 Black -> bPieces board
 
-countLinePickyWithEnds :: Board -> Col -> Position -> Position -> Int -> Int
-countLinePickyWithEnds board col (x, y) (xoffset, yoffset) count =
+countLinePickyWithEnd :: Board -> Col -> Position -> Position -> Int -> Int
+countLinePickyWithEnd board col (x, y) (xoffset, yoffset) count =
 
     let
       checkPos = (x + xoffset, y + yoffset)
       pieces = case col of
                 White -> wPieces board
                 Black -> bPieces board
-      oppPieces = case col if
+      oppPieces = case col of
                 White -> bPieces board
                 Black -> wPieces board
     in if checkPos `elem` pieces
        then countLine board col checkPos (xoffset, yoffset) (count + 1)
-       else if not checkPos `elem` oppPieces
+       else if not (checkPos `elem` oppPieces)
        then count
        else 0
 
