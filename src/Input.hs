@@ -71,19 +71,11 @@ handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w
         let snapped = clickSnap w (round x, round y)
         --let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
         let selectedPos = (fromIntegral $ first snapped, fromIntegral $ second snapped)
-        let timeoutResult = unsafePerformIO $ timeout 1000000 $ Control.Exception.evaluate $ makeMove (board w) (turn w) selectedPos
-        let doesTurnInTime = case timeoutResult of
-              Nothing -> trace ("turn timed out") False
-              Just _ -> trace ("Returned in time!") True
-        let newBoard = case timeoutResult of
-                          Just (Just b) -> Just b
-                          _ -> Nothing
-        if doesTurnInTime
-            then case newBoard of
-                  Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") return $ World b (other $ turn w) (filePath w)
-                  Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") $ return w
-        --else World (bmps w) (board w) (other $ turn w)
-        else trace ("yikes, time's up!") $ return w
+        let newBoard = makeMove (board w) (turn w) selectedPos
+
+        case newBoard of
+           Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") return $ World b (other $ turn w) (filePath w)
+           Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") $ return w
 
 handleInputIO (EventKey (Char 'u') Up _ _) w
     = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ return $ undoRound w
