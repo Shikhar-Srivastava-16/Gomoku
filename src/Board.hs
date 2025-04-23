@@ -126,7 +126,7 @@ makeMove oldBoard curTurn newPosition = do
     Nothing -- Position is not a valid board spot
   else if newPosition `elem` wPieces oldBoard || newPosition `elem` bPieces oldBoard then
     Nothing -- Position already taken by another piece -- else if True && -- 3 and 3 rule, cannot make two open 3 long rows
-  else if (hasFourByFour oldBoard curTurn newPosition)-- 4 and 4 rule, cannot make two 4 long rows
+  else if (hasFourByFour oldBoard curTurn newPosition) then-- 4 and 4 rule, cannot make two 4 long rows
     Nothing
   else do
     case curTurn of
@@ -146,25 +146,29 @@ which specifically check for lines in all 8 possible directions
 (NW, N, NE, E, W, SE, SW) -}
 
 hasFourByFour :: Board -> Col -> Position -> Bool
-hasFourByFour board col pos =
-  let
-    positiveDirections = [((0, 50), (50,50), (50, 0), (50, -50)]
+hasFourByFour board col pos = a
+  where
+    positiveDirections = [(0, 50), (50,50), (50, 0), (50, -50)]
     -- take this position, count its line length in one direction
     -- count it in the opposite direction, add, + 1 for itself
-    totalDirectionLengths = map (countLineBothEnds pos) (positiveDirections)
+    totalDirectionLengths = Prelude.map (countLineBothEnds board col pos) (positiveDirections)
     -- if equals 4, add to fourRowCount
-    fourRowCount = length (filter (== 4) totalDirectionLengths)
+    fourRowCount = Prelude.length (Prelude.filter (== 4) totalDirectionLengths)
     -- return fourRowCount >= 2
-    return fourRowCount >= 2
+    a = (fourRowCount >= 2)
 
-countLineBothEnds (x, y) (xoffset, yoffset) =
-    countLine (x, y) (xoffset, yoffset) ((countLine (x, y) (-(xoffset), -(yoffset))) 1)
+countLineBothEnds b c (x, y) (xoffset, yoffset) = countLine b c (x, y) (xoffset, yoffset) ( (countLine b c (x, y) ( -(xoffset), -(yoffset) ) 1) )
 
-countLine (x, y) (xoffset, yoffset) count =
+countLine :: Board -> Col -> Position -> Position -> Int -> Int
+countLine board col (x, y) (xoffset, yoffset) count =
+
     let checkPos = (x + xoffset, y + yoffset)
     in if checkPos `elem` pieces
-       then countLine checkPos (xoffset, yoffset) (count + 1)
+       then countLine board col checkPos (xoffset, yoffset) (count + 1)
        else count
+    where pieces = case col of
+                White -> wPieces $ board
+                Black -> bPieces board
 
 hasWon :: Board -> Col -> Bool
 hasWon board col =
@@ -175,7 +179,7 @@ hasWon board col =
     targetCount = target board
 
     directions = [(-50,-50), (-50,0), (-50,50), (0,-50), (0,50), (50,-50), (50,0), (50,50)]
-    shouldCheckLine position directionToCheck = countLine position directionToCheck 1 >= targetCount
+    shouldCheckLine position directionToCheck = countLine board col position directionToCheck 1 >= targetCount
 
     {-- countLine (x, y) (xoffset, yoffset) count =
       let checkPos = (x + xoffset, y + yoffset)
