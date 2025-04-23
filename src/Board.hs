@@ -34,18 +34,12 @@ other White = Black
 
 
 type Position = (Float, Float)
-  -- deriving (Show, Generic)
-
--- instance FromJSON Position
--- instance ToJSON Position
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
 -- of pairs of position and the colour at that position.  So a 10x10 board
 -- for a game of 5 in a row with a black piece at 5,5 and a white piece at 8,7
 -- would be represented as:
---
--- Board 10 5 [((5, 5), Black), ((8,7), White)]     NOTE: NO
 
 data Board = Board { tileSize :: Int,
                      size :: Int,
@@ -67,7 +61,6 @@ btloci bDims tSize = do
   let bs = [(-1 * a), (tSize - a)..a] where a = bDims * 0.5 * tSize
   [ (x, y) | x <- bs, y <- bs ]
 
--- Default board is 6x6, target is 3 in a row, no initial pieces
 initBoard bDim bTarg = do
   let bDimension = (bDim - 1)            -- 1 less than the actual dimension on the board
   let tileSize = 50
@@ -89,14 +82,13 @@ data World = World { won :: Bool,
                      turn :: Col,
                      filePath :: String,
                      hint :: Maybe Position,
-                     aiLevel :: Int }      -- Just if file exists, otherwise Nothing
+                     aiLevel :: Int }
   deriving (Show, Generic)
 
 instance FromJSON World
 instance ToJSON World
 
 initWorld :: Int -> Int -> String -> Maybe World -> Int -> World
--- initWorld bDim bTarg filePath "" = 
 initWorld bDim bTarg savePath spec = case spec of 
                                           Nothing -> World (False) (initBoard bDim bTarg) Black savePath Nothing
                                           Just a -> World (won a) (board a) (turn a) (filePath a) Nothing
@@ -109,18 +101,6 @@ data Bmps = Bmps { bl :: Picture,
                    hintPic :: Picture }
   deriving (Show, Generic)
 
--- instance FromJSON Bmps where
---   -- parseJSON (Object v) = Bmps <$> v .: "bl" <*> v .: "wh" <*> v .: "sq"
---   parseJSON _ = mzero
-
--- instance ToJSON Bmps where
---   toJSON (Bmps bl wh sq) = 
---     object [ (fromString "bl") .= (circleSolid 0.5), (fromString "wh") .= (circleSolid 0.5), (fromString "sq") .= (circleSolid 0.5)]
---   -- toJSON _ = mzero
-
--- deriving instance Generic Picture
--- instance FromJSON Picture
--- instance ToJSON Picture
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
@@ -146,10 +126,6 @@ checkWon board =
   else if hasWon board Black then ( trace ("Bl Win HERE") Just Black )
   else Nothing
 
-{- Hint: One way to implement 'checkWon' would be to write functions
-which specifically check for lines in all 8 possible directions
-(NW, N, NE, E, W, SE, SW) -}
-
 hasThreeAndThree :: Board -> Col -> Position -> Bool
 hasThreeAndThree board col pos = a
   where
@@ -159,7 +135,6 @@ hasThreeAndThree board col pos = a
     totalDirectionLengths = Prelude.map (countLinePickyBothEnds board col pos) (positiveDirections)
     -- if equals 4, add to fourRowCount
     fourRowCount = Prelude.length (Prelude.filter (== 3) totalDirectionLengths)
-    -- return fourRowCount >= 2
     a = (fourRowCount >= 2)
 
 hasFourAndFour :: Board -> Col -> Position -> Bool
@@ -221,18 +196,8 @@ hasWon board col =
     directions = [(-50,-50), (-50,0), (-50,50), (0,-50), (0,50), (50,-50), (50,0), (50,50)]
     shouldCheckLine position directionToCheck = countLine board col position directionToCheck 1 >= targetCount
 
-    {-- countLine (x, y) (xoffset, yoffset) count =
-      let checkPos = (x + xoffset, y + yoffset)
-      in if checkPos `elem` pieces
-         then countLine checkPos (xoffset, yoffset) (count + 1)
-         else count --}
   in Prelude.any (\pos -> Prelude.any (shouldCheckLine pos) directions) (pieces)
 
-{-- 
- - Check world turn
- - black => change black piece set
- - white => change white piece set
---}
 undoTurn :: World -> World
 undoTurn w = do
   let curBoard = board w
@@ -269,11 +234,6 @@ togglePause w = do
 
 undoRound :: World -> World
 undoRound w = do 
-  {-- 
-  - remove latest from both
-  - so, newBs = Prelude.init Bs
-       newWs = Prelude.init Ws
-  --}
   let curBoard = board w
   let oBs = bPieces curBoard
   let oWs = wPieces curBoard
@@ -285,7 +245,7 @@ undoRound w = do
                then oWs
                else Prelude.init oWs 
 
-  World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w) Nothing (aiLevel w)-- TODO set current and paused time to current time - 10 for fair replay
+  World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w) Nothing (aiLevel w)
 
 {- In these functions:
 To check for a line of n in a row in a direction D:

@@ -85,7 +85,6 @@ cliParser = CLIArgs
 
 main :: IO ()
 main = do
-    -- bitmapDataOfBMP?
     bl <- loadBMP "res/bl.bmp"
     wh <- loadBMP "res/wh.bmp"
     sq <- loadBMP "res/sq.bmp"
