@@ -68,7 +68,7 @@ cliParser = CLIArgs
              ( long "aigen"
             <> short 'a'
             <> metavar "<WHICH AI>"
-            <> value 0 -- NOTE: No AI by default TODO change later?
+            <> value 2
             <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
          <*> strOption
              ( long "filepath"
@@ -99,7 +99,7 @@ main = do
     if ((argLoadFilePath composed) == "!!none!!") 
         then do
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (makeColor 1 0.85 0.5 1) (argSpd composed)
-                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) )         -- in Board.hs
+                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) (argAI composed))         -- in Board.hs
                 ( drawIOWorld bmps )              -- in Draw.hs
                 handleInputIO                     -- in Input.hs
                 updateWorldIO                     -- in AI.hs
@@ -107,7 +107,7 @@ main = do
         else do
             spec <- foo (argLoadFilePath composed)
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (makeColor 1 0.85 0.5 1) (argSpd composed)
-                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) )         -- in Board.hs
+                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) (argAI composed))         -- in Board.hs
                 ( drawIOWorld bmps )            -- in Draw.hs
                 handleInputIO                   -- in Input.hs
                 updateWorldIO                   -- in AI.hs
