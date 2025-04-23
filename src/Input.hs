@@ -66,7 +66,7 @@ handleInputIO :: Event -> World -> IO World
 --         case newBoard of
 --             Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") (return $ World b (other $ turn w) (filePath w) )
 --             Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") (return w)
-handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w 
+handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w 
     = do
         let snapped = clickSnap w (round x, round y)
         --let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
@@ -80,10 +80,10 @@ handleInput (EventKey (MouseButton LeftButton) Up m (x, y)) w
                           _ -> Nothing
         if doesTurnInTime
             then case newBoard of
-                  Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") World (bmps w) b (other $ turn w)
-                  Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") w
+                  Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") return $ World b (other $ turn w) (filePath w)
+                  Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") $ return w
         --else World (bmps w) (board w) (other $ turn w)
-        else trace ("yikes, time's up!") w
+        else trace ("yikes, time's up!") $ return w
 
 handleInputIO (EventKey (Char 'u') Up _ _) w
     = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ return $ undoRound w
@@ -107,8 +107,8 @@ handleInputIO (EventKey (Char 's') Up _ _) w
     = trace ("Key " ++ show 's' ++ " up: saving") $ do 
                                                      a <- saveWorld w (filePath w)
                                                      return w
-handleInput (EventKey (Char 'p') Up _ _) w
-    = trace ("Key " ++ show 'p' ++ " up: Toggling Pause") $ togglePause w
+handleInputIO (EventKey (Char 'p') Up _ _) w
+    = trace ("Key " ++ show 'p' ++ " up: Toggling Pause") $ return $ togglePause w
 -- other input events
 
 {--

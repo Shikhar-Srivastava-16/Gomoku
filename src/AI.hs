@@ -92,7 +92,7 @@ updateWorld t w = do
              | checkWon (board w) == Just White = trace "Wh Win" w -- TODO exit here
              | null allPossibleMoves = trace "error generating moves or none valid" w
              | turn w == Black = case makeMove (board w) (turn w) (head allPossibleMoves) of
-                                 Just validBoard -> World { bmps = bmps w, board = validBoard, turn = other (turn w)}
+                                 Just validBoard -> World {  board = validBoard, turn = other (turn w), filePath = filePath w}
                                  Nothing -> trace "ai error" w
              | otherwise = trace ("No Win, checking turn is in time limit") w
              where allPossibleMoves = gen (board w) (turn w)
@@ -106,7 +106,7 @@ updateWorld t w = do
         then do
           let currentBoard = board w
           let newTimingBoard = Board (tileSize currentBoard) (size currentBoard) (target currentBoard) (currentTime) (currentTime) (False) (buttonLoci currentBoard) (wPieces currentBoard) (bPieces currentBoard)
-          trace ("took too long for turn, handing it over!") World { bmps = bmps w, board = (newTimingBoard), turn = other (turn w) }
+          trace ("took too long for turn, handing it over!") World {  board = (newTimingBoard), turn = other (turn w), filePath = filePath w }
         else
           w
  -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
