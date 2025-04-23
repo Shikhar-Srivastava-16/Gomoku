@@ -81,16 +81,16 @@ handleInputIO (EventKey (Char 'u') Up _ _) w
     = trace ("Undoing one from both") $ return $ undoRound w
 
 handleInputIO (EventKey (Char '.') Up _ _) w
-    = trace ("higher targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) + 1)) (turn w) (filePath w) (hint w) (aiLevel w))
+    = trace ("higher targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) + 1) (rules $ board w)) (turn w) (filePath w) (hint w) (aiLevel w))
 
 handleInputIO (EventKey (Char ',') Up _ _) w
-    = trace ("lower targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) - 1)) (turn w) (filePath w) (hint w) (aiLevel w))
+    = trace ("lower targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) - 1) (rules $ board w)) (turn w) (filePath w) (hint w) (aiLevel w))
 
 handleInputIO (EventKey (Char '>') Up _ _) w
-    = trace ("size higher") $ return (World (won w) (initBoard ((size $ board w) + 2) (target $ board w)) (turn w) (filePath w) (hint w) (aiLevel w))
+    = trace ("size higher") $ return (World (won w) (initBoard ((size $ board w) + 2) (target $ board w) (rules $ board w)) (turn w) (filePath w) (hint w) (aiLevel w))
 
 handleInputIO (EventKey (Char '<') Up _ _) w
-    = trace ("size lower") $ return (World (won w) (initBoard ((size $ board w)) (target $ board w)) (turn w) (filePath w) (hint w) (aiLevel w))
+    = trace ("size lower") $ return (World (won w) (initBoard ((size $ board w)) (target $ board w) (rules $ board w)) (turn w) (filePath w) (hint w) (aiLevel w))
 -- ( Board (tileSize $ board w ) ((size $ board w) - 1) (target $ board w) (buttonLoci $ board w) (nWs) (nBs) )
 handleInputIO (EventKey (Char 'b') Up _ _) w
     = trace ("Undoing one from current player") $ return $ undoTurn w

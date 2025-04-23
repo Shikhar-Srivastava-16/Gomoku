@@ -53,13 +53,23 @@ data Board = Board { tileSize :: Int,
                      turnStartTime :: Clock.UTCTime,
                      turnPausedStartTime :: Clock.UTCTime,
                      paused :: Bool,
+                     rules :: GameRules,
                      buttonLoci :: [Position],
                      wPieces :: [Position],
                      bPieces :: [Position] }
   deriving (Show, Generic)
 
+data GameRules = GameRules { blackOverline :: Bool,
+                             whiteOverline :: Bool,threeAndThree :: Bool,
+                             fourAndFour :: Bool,
+                             custodialCapture :: Bool }
+                            deriving (Show, Generic)
+
 instance FromJSON Board
 instance ToJSON Board
+
+instance FromJSON GameRules
+instance ToJSON GameRules
 
 btloci :: Float -> Float -> [Position]
 btloci bDims tSize = do
@@ -68,13 +78,13 @@ btloci bDims tSize = do
   [ (x, y) | x <- bs, y <- bs ]
 
 -- Default board is 6x6, target is 3 in a row, no initial pieces
-initBoard bDim bTarg = do
+initBoard bDim bTarg rules = do
   let bDimension = (bDim - 1)            -- 1 less than the actual dimension on the board
   let tileSize = 50
   let currentTime = unsafePerformIO $ getCurrentTime
   let target = bTarg
   let loci = btloci (fromIntegral bDimension) (fromIntegral tileSize)
-  Board tileSize bDimension target currentTime currentTime False loci [] []
+  Board tileSize bDimension target currentTime currentTime False rules loci [] []
 
 -- Overall state is the board and whose turn it is, plus any further
 -- information about the world (this may later include, for example, player
@@ -95,10 +105,18 @@ data World = World { won :: Bool,
 instance FromJSON World
 instance ToJSON World
 
-initWorld :: Int -> Int -> String -> Maybe World -> Int -> World
+initGameRules :: String -> GameRules
+initGameRules gameTypeName = case gameTypeName of
+                            "Renju" -> GameRules True False True True False
+                            "Omok" -> GameRules False False True False False
+                            "Default" -> GameRules False False False False False
+                            _ -> GameRules False False False False False
+
+
+initWorld :: Int -> Int -> String -> String -> Maybe World -> Int -> World
 -- initWorld bDim bTarg filePath "" = 
-initWorld bDim bTarg savePath spec = case spec of 
-                                          Nothing -> World (False) (initBoard bDim bTarg) Black savePath Nothing
+initWorld bDim bTarg savePath rules spec = case spec of 
+                                          Nothing -> World (False) (initBoard bDim bTarg (initGameRules rules)) Black savePath Nothing
                                           Just a -> World (won a) (board a) (turn a) (filePath a) Nothing
 
 data Bmps = Bmps { bl :: Picture,
@@ -129,9 +147,9 @@ makeMove oldBoard curTurn newPosition = do
     Nothing -- Position is not a valid board spot
   else if newPosition `elem` wPieces oldBoard || newPosition `elem` bPieces oldBoard then
     Nothing -- Position already taken by another piece -- else if True && -- 3 and 3 rule, cannot make two open 3 long rows
-  else if (hasFourAndFour oldBoard curTurn newPosition) then-- 4 and 4 rule, cannot make two 4 long rows
+  else if (fourAndFour (rules oldBoard)) && (hasFourAndFour oldBoard curTurn newPosition) then-- 4 and 4 rule, cannot make two 4 long rows
     Nothing
-  else if (hasThreeAndThree oldBoard curTurn newPosition) then
+  else if (threeAndThree (rules oldBoard)) && (hasThreeAndThree oldBoard curTurn newPosition) then
     Nothing
   else do
     case curTurn of
@@ -219,7 +237,11 @@ hasWon board col =
     targetCount = target board
 
     directions = [(-50,-50), (-50,0), (-50,50), (0,-50), (0,50), (50,-50), (50,0), (50,50)]
-    shouldCheckLine position directionToCheck = countLine board col position directionToCheck 1 >= targetCount
+
+    colIsOverlined = ((col == White) && (whiteOverline $ rules $ board)) || ((col == Black) && (blackOverline $ rules $ board))
+    
+    shouldCheckLine position directionToCheck = if (colIsOverlined) then countLine board col position directionToCheck 1 == targetCount
+                                                else countLine board col position directionToCheck 1 >= targetCount
 
     {-- countLine (x, y) (xoffset, yoffset) count =
       let checkPos = (x + xoffset, y + yoffset)
@@ -243,7 +265,7 @@ undoTurn w = do
                 then oBs
                 else Prelude.init oBs
       let nWs = wPieces curBoard    
-      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w) Nothing (aiLevel w)
+      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (rules curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w) Nothing (aiLevel w)
 
     Black -> do 
       let oWs = wPieces curBoard    
@@ -252,7 +274,7 @@ undoTurn w = do
                 else Prelude.init oWs
       let nBs = bPieces curBoard    
 
-      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w) Nothing (aiLevel w)
+      World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (rules curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w) Nothing (aiLevel w)
 
 
 togglePause :: World -> World
@@ -263,9 +285,9 @@ togglePause w = do
     then do
     let pauseDuration = diffUTCTime currentTime (turnPausedStartTime curBoard)
     let pauseOffsetStart = addUTCTime pauseDuration (turnStartTime curBoard)
-    World (won w) (Board (tileSize curBoard) (size curBoard) (target curBoard) (pauseOffsetStart) (currentTime) (False) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w) Nothing (aiLevel w)
+    World (won w) (Board (tileSize curBoard) (size curBoard) (target curBoard) (pauseOffsetStart) (currentTime) (False) (rules curBoard) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w) Nothing (aiLevel w)
   else
-    World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (currentTime) (True) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w) Nothing (aiLevel w)
+    World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (currentTime) (True) (rules curBoard) (buttonLoci curBoard) (wPieces curBoard) (bPieces curBoard) ) (turn w) (filePath w) Nothing (aiLevel w)
 
 undoRound :: World -> World
 undoRound w = do 
@@ -285,7 +307,7 @@ undoRound w = do
                then oWs
                else Prelude.init oWs 
 
-  World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w) Nothing (aiLevel w)-- TODO set current and paused time to current time - 10 for fair replay
+  World (won w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (rules curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) (filePath w) Nothing (aiLevel w)-- TODO set current and paused time to current time - 10 for fair replay
 
 {- In these functions:
 To check for a line of n in a row in a direction D:

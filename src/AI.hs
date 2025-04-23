@@ -84,8 +84,8 @@ updateWorld :: Float -> World -> World
 updateWorld t w = do
   if (won w) then w
     else do
-      let retval | checkWon (board w) == Just Black = trace ("Bl Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
-                | checkWon (board w) == Just White = trace ("Wh Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
+      let retval | checkWon (board w) == Just Black = trace ("Bl Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False (rules $ board w) [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
+                | checkWon (board w) == Just White = trace ("Wh Win " ++ (show $ won w)) (World (True) (Board 50 6 3 (turnStartTime $ board w) (turnPausedStartTime $ board w) False (rules $ board w) [] [] []) (turn w) (filePath w) Nothing (aiLevel w)) -- TODO exit here
                 | null allPossibleMoves = trace "error generating moves or none valid" $ w
                 | turn w == Black && aiLevel w > 0 = 
                   let bestMove = getBestMove (aiLevel w) (buildTree gen (board w) Black)
@@ -105,7 +105,7 @@ updateWorld t w = do
           if (turnDuration > 10) && not (paused (board w)) -- todo change to modular
             then do
               let currentBoard = board w
-              let newTimingBoard = Board (tileSize currentBoard) (size currentBoard) (target currentBoard) (currentTime) (currentTime) (False) (buttonLoci currentBoard) (wPieces currentBoard) (bPieces currentBoard)
+              let newTimingBoard = Board (tileSize currentBoard) (size currentBoard) (target currentBoard) (currentTime) (currentTime) (False) (rules currentBoard) (buttonLoci currentBoard) (wPieces currentBoard) (bPieces currentBoard)
               trace ("took too long for turn, handing it over!") World { aiLevel = (aiLevel w), won = (won w), board = (newTimingBoard), turn = other (turn w), filePath = filePath w, hint = Nothing }
             else do
               if won retval 

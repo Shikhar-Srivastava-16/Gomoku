@@ -39,6 +39,7 @@ data CLIArgs = CLIArgs { argSize :: Int,
                          argTarget :: Int, 
                          argSpd :: Int,
                          argAI :: Int,
+                         argGameType :: String,
                          argSaveFile :: String,
                          argLoadFilePath :: String }
 
@@ -71,6 +72,12 @@ cliParser = CLIArgs
             <> value 0
             <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
          <*> strOption
+             ( long "gametype"
+            <> short 'g'
+            <> value "default"
+            <> metavar "<GAME TYPE>"
+            <> help "Type of game, can do Default, Omok, or Renju" )
+         <*> strOption
              ( long "filepath"
             <> short 'f'
             <> value "save.json"
@@ -78,7 +85,7 @@ cliParser = CLIArgs
             <> help "Where the game gets saved (if save is run)" )
          <*> strOption
              ( long "load"
-            <> short 'l'                              
+            <> short 'l'
             <> value "!!none!!"
             <> metavar "<LOAD FILE>"
             <> help "if this argument is passed in, the game will load a save" )
@@ -99,7 +106,7 @@ main = do
     if ((argLoadFilePath composed) == "!!none!!") 
         then do
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (makeColor 1 0.85 0.5 1) (argSpd composed)
-                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Nothing) ((argAI composed) * 2))         -- in Board.hs
+                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (argGameType composed) (Nothing) ((argAI composed) * 2))         -- in Board.hs
                 ( drawIOWorld bmps )              -- in Draw.hs
                 handleInputIO                     -- in Input.hs
                 updateWorldIO                     -- in AI.hs
@@ -107,7 +114,7 @@ main = do
         else do
             spec <- foo (argLoadFilePath composed)
             playIO (InWindow "Gomoku" (640, 480) (10, 10)) (makeColor 1 0.85 0.5 1) (argSpd composed)
-                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (Just spec) ((argAI composed) * 2))         -- in Board.hs
+                ( initWorld (argSize composed) (argTarget composed) (argSaveFile composed) (argGameType composed) (Just spec) ((argAI composed) * 2))         -- in Board.hs
                 ( drawIOWorld bmps )            -- in Draw.hs
                 handleInputIO                   -- in Input.hs
                 updateWorldIO                   -- in AI.hs
