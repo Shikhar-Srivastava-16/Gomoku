@@ -1,6 +1,5 @@
 module AI where
 
-import Lists
 import Board
 import Debug.Trace
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
@@ -113,12 +112,6 @@ updateWorld t w = do
                 else w
 
 
- -- let newPos = getBestMove 0 (buildTree (gen) (board w) (turn w))
- -- -- now make new board
- -- let newBoard = makeMove (board w) (turn w) newPos
- -- case newBoard of
- --   Just b -> World b (other $ turn w)
- --   Nothing -> trace ("Invalid Gen") (World (board w) (turn w))
 
 {- Hint: 'updateWorld' is where the AI gets called. If the world state
  indicates that it is a computer player's turn, updateWorld should use

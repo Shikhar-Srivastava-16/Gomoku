@@ -20,7 +20,6 @@ drawWorld bmps w = do
         else do  
             let bDims = fromIntegral $ size $ board w
             Pictures (drawBmpGrid bmps w)
-    -- Pictures $ drawGrid 50 bDims (wPieces $ board w) (bPieces $ board w)
 
 -- Old drawGrid function for drawing purely rather than with bitmap images
 drawGrid tSize bDims wPieces bPieces = do

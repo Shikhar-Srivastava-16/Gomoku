@@ -59,17 +59,9 @@ second (a,b) = b
 -- to stderr, which can be a very useful way of debugging!
 
 handleInputIO :: Event -> World -> IO World
--- handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w 
---     = do
---         let snapped = clickSnap w (round x, round y)
---         let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
---         case newBoard of
---             Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") (return $ World b (other $ turn w) (filePath w) )
---             Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") (return w)
 handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w 
     = do
         let snapped = clickSnap w (round x, round y)
-        --let newBoard = makeMove (board w) (turn w) (fromIntegral $ first snapped, fromIntegral $ second snapped)
         let selectedPos = (fromIntegral $ first snapped, fromIntegral $ second snapped)
         let newBoard = makeMove (board w) (turn w) selectedPos
 
@@ -104,19 +96,6 @@ handleInputIO (EventKey (Char 'p') Up _ _) w
 
 handleInputIO (EventKey (Char 'h') Up _ _) w
     = return w { hint = (calcHint w)} 
--- other input events
-
-{--
- - Configs
-     - 
---}
 
 handleInputIO e b = return b
-
-{- Hint: when the 'World' is in a state where it is the human player's
- turn to move, a mouse press event should calculate which board position
- a click refers to, and update the board accordingly.
-
- At first, it is reasonable to assume that both players are human players.
--}
 
