@@ -74,33 +74,33 @@ handleInputIO (EventKey (MouseButton LeftButton) Up m (x, y)) w
         let newBoard = makeMove (board w) (turn w) selectedPos
 
         case newBoard of
-           Just b -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved here") return $ World b (other $ turn w) (filePath w)
-           Nothing -> trace ("Left button press at " ++ show (x,y) ++ "snapped to: " ++ show snapped ++ "; " ++ " !!Invalid Move!!") $ return w
+           Just b -> trace ("Left click " ++ show (x,y) ++ " snapped to: " ++ show snapped ++ "; " ++ show (turn w) ++ " moved.") return $ World b (other $ turn w) (filePath w)
+           Nothing -> trace ("Left click " ++ show (x,y) ++ " !!Invalid Move!!") $ return w
 
 handleInputIO (EventKey (Char 'u') Up _ _) w
-    = trace ("Key " ++ show 'u' ++ " up: Undoing one from both") $ return $ undoRound w
+    = trace ("Undoing one from both") $ return $ undoRound w
 
 handleInputIO (EventKey (Char '.') Up _ _) w
-    = trace ("Key " ++ show '>' ++ " up: higher targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) + 1)) (turn w) (filePath w))
+    = trace ("higher targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) + 1)) (turn w) (filePath w))
 
 handleInputIO (EventKey (Char ',') Up _ _) w
-    = trace ("Key " ++ show ',' ++ " up: lower targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) - 1)) (turn w) (filePath w))
+    = trace ("lower targ") $ return (World (won w) (initBoard ((size $ board w) + 1) ((target $ board w) - 1)) (turn w) (filePath w))
 
 handleInputIO (EventKey (Char '>') Up _ _) w
-    = trace ("Key " ++ show '>' ++ " up: higher") $ return (World (won w) (initBoard ((size $ board w) + 2) (target $ board w)) (turn w) (filePath w))
+    = trace ("size higher") $ return (World (won w) (initBoard ((size $ board w) + 2) (target $ board w)) (turn w) (filePath w))
 
 handleInputIO (EventKey (Char '<') Up _ _) w
-    = trace ("Key " ++ show '<' ++ " up: lower") $ return (World (won w) (initBoard ((size $ board w)) (target $ board w)) (turn w) (filePath w))
+    = trace ("size lower") $ return (World (won w) (initBoard ((size $ board w)) (target $ board w)) (turn w) (filePath w))
 -- ( Board (tileSize $ board w ) ((size $ board w) - 1) (target $ board w) (buttonLoci $ board w) (nWs) (nBs) )
 handleInputIO (EventKey (Char 'b') Up _ _) w
-    = trace ("Key " ++ show 'b' ++ " up: Undoing one from current player") $ return $ undoTurn w
+    = trace ("Undoing one from current player") $ return $ undoTurn w
     
 handleInputIO (EventKey (Char 's') Up _ _) w
-    = trace ("Key " ++ show 's' ++ " up: saving") $ do 
+    = trace ("saving") $ do 
                                                      a <- saveWorld w (filePath w)
                                                      return w
 handleInputIO (EventKey (Char 'p') Up _ _) w
-    = trace ("Key " ++ show 'p' ++ " up: Toggling Pause") $ return $ togglePause w
+    = trace ("Toggling Pause") $ return $ togglePause w
 -- other input events
 
 {--
