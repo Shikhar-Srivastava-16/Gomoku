@@ -106,7 +106,7 @@ updateWorld t w = do
             then do
               let currentBoard = board w
               let newTimingBoard = Board (tileSize currentBoard) (size currentBoard) (target currentBoard) (currentTime) (currentTime) (False) (buttonLoci currentBoard) (wPieces currentBoard) (bPieces currentBoard)
-              trace ("took too long for turn, handing it over!") World { won = (won w), board = (newTimingBoard), turn = other (turn w), filePath = filePath w, hint = Nothing }
+              trace ("took too long for turn, handing it over!") World { aiLevel = (aiLevel w), won = (won w), board = (newTimingBoard), turn = other (turn w), filePath = filePath w, hint = Nothing }
             else do
               if won retval 
                 then retval

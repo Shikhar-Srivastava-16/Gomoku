@@ -49,14 +49,14 @@ cliParser = CLIArgs
              ( long "bsize"
             <> short 's'
             <> metavar "<SIZE>"
-            <> value 6
+            <> value 15
             <> help "The size of the board" )
          -- parser for target
          <*> option auto
              ( long "target"
             <> short 't'
             <> metavar "<TARGET>"
-            <> value 3
+            <> value 5
             <> help "The number of tokens in a row needed to win" )
          <*> option auto
              ( long "speed"
@@ -68,7 +68,7 @@ cliParser = CLIArgs
              ( long "aigen"
             <> short 'a'
             <> metavar "<WHICH AI>"
-            <> value 2
+            <> value 0
             <> help "Which AI model to run: 0 is OFF, i.e no AI (2-player)" )
          <*> strOption
              ( long "filepath"
