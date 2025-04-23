@@ -243,10 +243,10 @@ saveWorld w filePath = do
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate board col = do-- 2 for won, 0 for lost, 1 for still deciding
-  case checkWon board of
-    Nothing -> 10
-    Just col' -> if col' == col then 20 else 0
+evaluate board _
+  | hasWon board White = -1
+  | hasWon board Black = 1
+  | otherwise = 0
 
 evalTie :: Board -> Col -> Int
 evalTie board col = undefined
