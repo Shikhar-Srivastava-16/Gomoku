@@ -126,7 +126,9 @@ makeMove oldBoard curTurn newPosition = do
     Nothing -- Position is not a valid board spot
   else if newPosition `elem` wPieces oldBoard || newPosition `elem` bPieces oldBoard then
     Nothing -- Position already taken by another piece -- else if True && -- 3 and 3 rule, cannot make two open 3 long rows
-  else if (hasFourByFour oldBoard curTurn newPosition) then-- 4 and 4 rule, cannot make two 4 long rows
+  else if (hasFourAndFour oldBoard curTurn newPosition) then-- 4 and 4 rule, cannot make two 4 long rows
+    Nothing
+  else if (hasThreeAndThree oldBoard curTurn newPosition) then
     Nothing
   else do
     case curTurn of
@@ -145,8 +147,20 @@ checkWon board =
 which specifically check for lines in all 8 possible directions
 (NW, N, NE, E, W, SE, SW) -}
 
-hasFourByFour :: Board -> Col -> Position -> Bool
-hasFourByFour board col pos = a
+hasThreeAndThree :: Board -> Col -> Position -> Bool
+hasThreeAndThree :: Board -> Col -> Position -> Bool
+  where
+    positiveDirections = [(0, 50), (50,50), (50, 0), (50, -50)]
+    -- take this position, count its line length in one direction
+    -- count it in the opposite direction, add, + 1 for itself
+    totalDirectionLengths = Prelude.map (countLineBothEnds board col pos) (positiveDirections)
+    -- if equals 4, add to fourRowCount
+    fourRowCount = Prelude.length (Prelude.filter (== 3) totalDirectionLengths)
+    -- return fourRowCount >= 2
+    a = (fourRowCount >= 2)
+
+hasFourAndFour :: Board -> Col -> Position -> Bool
+hasFourAndFour board col pos = a
   where
     positiveDirections = [(0, 50), (50,50), (50, 0), (50, -50)]
     -- take this position, count its line length in one direction
@@ -159,6 +173,11 @@ hasFourByFour board col pos = a
 
 countLineBothEnds b c (x, y) (xoffset, yoffset) = countLine b c (x, y) (xoffset, yoffset) ( (countLine b c (x, y) ( -(xoffset), -(yoffset) ) 1) )
 
+countLinePickyBothEnds b c (x, y) (xoffset, yoffset) = do
+  let firstCount = countLinePickyWithEnds b c (x, y) ( -(xoffset), -(yoffset) ) 1
+  if firstCount == 0 then 0
+  else countLinePickyWithEnds b c (x, y) (xoffset, yoffset) ( firstCount )
+
 countLine :: Board -> Col -> Position -> Position -> Int -> Int
 countLine board col (x, y) (xoffset, yoffset) count =
 
@@ -167,8 +186,26 @@ countLine board col (x, y) (xoffset, yoffset) count =
        then countLine board col checkPos (xoffset, yoffset) (count + 1)
        else count
     where pieces = case col of
-                White -> wPieces $ board
+                White -> wPieces board
                 Black -> bPieces board
+
+countLinePickyWithEnds :: Board -> Col -> Position -> Position -> Int -> Int
+countLinePickyWithEnds board col (x, y) (xoffset, yoffset) count =
+
+    let
+      checkPos = (x + xoffset, y + yoffset)
+      pieces = case col of
+                White -> wPieces board
+                Black -> bPieces board
+      oppPieces = case col if
+                White -> bPieces board
+                Black -> wPieces board
+    in if checkPos `elem` pieces
+       then countLine board col checkPos (xoffset, yoffset) (count + 1)
+       else if not checkPos `elem` oppPieces
+       then count
+       else 0
+
 
 hasWon :: Board -> Col -> Bool
 hasWon board col =
