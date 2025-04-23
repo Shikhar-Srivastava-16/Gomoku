@@ -35,8 +35,11 @@ drawGrid tSize bDims wPieces bPieces = do
     let bPics = [ translate xi yi (Color black $ circleSolid $ tSize * 0.4) | (xi, yi) <- bPieces]    
     [ Color white $ Line locus | locus <- loci ] ++ wPics ++ bPics
 
-drawBmpGrid bmps w = tiles ++ wPics ++ bPics
+drawBmpGrid bmps w = tiles ++ wPics ++ bPics ++ hPic
     where
         wPics = [ translate xi yi (scale 0.08 0.08 $ wh bmps) | (xi, yi) <- wPieces $ board w]
         bPics = [ translate xi yi (scale 0.04 0.04 $ bl bmps) | (xi, yi) <- bPieces $ board w]
-        tiles = [ translate xi yi (scale 0.5 0.5 $ sq bmps) | (xi, yi) <- buttonLoci $ board w]  
+        tiles = [ translate xi yi (scale 0.5 0.5 $ sq bmps) | (xi, yi) <- buttonLoci $ board w]
+        hPic = case (hint w) of
+            Nothing -> []
+            Just (x, y) -> [translate x y $ scale 0.5 0.5 $ hintPic bmps]
