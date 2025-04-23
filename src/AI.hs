@@ -138,4 +138,4 @@ updateWorld t w = do
 calcHint :: World -> Maybe Position
 calcHint w =
     let tree = (buildTree gen (board w) (turn w))
-    in Just (getBestMove (aiLevel w) tree)
+    in Just (getBestMove 3 tree)
