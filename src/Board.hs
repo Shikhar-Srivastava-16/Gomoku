@@ -126,6 +126,9 @@ makeMove oldBoard curTurn newPosition = do
     Nothing -- Position is not a valid board spot
   else if newPosition `elem` wPieces oldBoard || newPosition `elem` bPieces oldBoard then
     Nothing -- Position already taken by another piece
+  else if True && -- 3 and 3 rule, cannot make two open 3 long rows
+  else if -- 4 and 4 rule, cannot make two 4 long rows
+    
   else
     case curTurn of
       Black -> Just $ oldBoard { bPieces = (bPieces oldBoard) ++ [newPosition] }
@@ -143,6 +146,27 @@ checkWon board =
 which specifically check for lines in all 8 possible directions
 (NW, N, NE, E, W, SE, SW) -}
 
+hasFourByFour :: Board -> Col -> Position -> Bool
+hasFourByFour board col pos =
+  let
+    positiveDirections = [((0, 50), (50,50), (50, 0), (50, -50)]
+    -- take this position, count its line length in one direction
+    -- count it in the opposite direction, add, + 1 for itself
+    totalDirectionLengths = map (countLineBothEnds pos) (positiveDirections)
+    -- if equals 4, add to fourRowCount
+    fourRowCount = length (filter (== 4) totalDirectionLengths)
+    -- return fourRowCount >= 2
+    return fourRowCount >= 2
+
+countLineBothEnds (x, y) (xoffset, yoffset) =
+    countLine (x, y) (xoffset, yoffset) ((countLine (x, y) (-(xoffset), -(yoffset))) 1)
+
+countLine (x, y) (xoffset, yoffset) count =
+    let checkPos = (x + xoffset, y + yoffset)
+    in if checkPos `elem` pieces
+       then countLine checkPos (xoffset, yoffset) (count + 1)
+       else count
+
 hasWon :: Board -> Col -> Bool
 hasWon board col =
   let
@@ -154,11 +178,11 @@ hasWon board col =
     directions = [(-50,-50), (-50,0), (-50,50), (0,-50), (0,50), (50,-50), (50,0), (50,50)]
     shouldCheckLine position directionToCheck = countLine position directionToCheck 1 >= targetCount
 
-    countLine (x, y) (xoffset, yoffset) count =
+    {-- countLine (x, y) (xoffset, yoffset) count =
       let checkPos = (x + xoffset, y + yoffset)
       in if checkPos `elem` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
-         else count
+         else count --}
   in Prelude.any (\pos -> Prelude.any (shouldCheckLine pos) directions) (pieces)
 
 {-- 

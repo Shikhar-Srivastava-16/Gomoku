@@ -101,6 +101,8 @@ updateWorld t w = do
       if (turn w /= turn retval) -- then AI has made a move and swapped turns to player, no need to check for timeout
         then trace ("returning retval") retval
         else do
+
+          let emptyVar = trace ("entered branch") "example"
           let currentTime = unsafePerformIO $ getCurrentTime
           let turnDuration = realToFrac $ diffUTCTime currentTime (turnStartTime (board w))
 
