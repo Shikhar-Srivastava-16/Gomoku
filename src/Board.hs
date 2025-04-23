@@ -1,12 +1,29 @@
+{-# LANGUAGE DeriveGeneric, StandaloneDeriving #-}
 module Board where
+
 import Debug.Trace
+
+import Control.Monad (when)
 import Graphics.Gloss
 import Data.Time.Clock (getCurrentTime, diffUTCTime, addUTCTime)
 import qualified Data.Time.Clock as Clock
 import System.IO.Unsafe
+import Data.Aeson
+import Data.Aeson.Key
+import Data.Text
+import Control.Applicative
+import Control.Monad
+import qualified Data.ByteString.Lazy as B
+import GHC.Generics
 
 data Col = Black | White
-  deriving (Show, Eq)
+  deriving (Show, Generic, Eq)
+
+instance FromJSON Col
+instance ToJSON Col
+
+
+
 
 
 
@@ -17,6 +34,10 @@ other White = Black
 
 
 type Position = (Float, Float)
+  -- deriving (Show, Generic)
+
+-- instance FromJSON Position
+-- instance ToJSON Position
 
 -- A Board is a record containing the board size (a board is a square grid,
 -- n * n), the number of pieces in a row required to win, and a list
@@ -35,7 +56,10 @@ data Board = Board { tileSize :: Int,
                      buttonLoci :: [Position],
                      wPieces :: [Position],
                      bPieces :: [Position] }
-  deriving Show
+  deriving (Show, Generic)
+
+instance FromJSON Board
+instance ToJSON Board
 
 btloci :: Float -> Float -> [Position]
 btloci bDims tSize = do
@@ -60,23 +84,41 @@ initBoard bDim bTarg = do
 -- will be useful (information for the AI, for example, such as where the
 -- most recent moves were).
 
+data World = World { 
+                     board :: Board,
+                     turn :: Col,
+                     filePath :: String }      -- Just if file exists, otherwise Nothing
+  deriving (Show, Generic)
+
+instance FromJSON World
+instance ToJSON World
+
+initWorld :: Int -> Int -> String -> Maybe World -> World
+-- initWorld bDim bTarg filePath "" = 
+initWorld bDim bTarg savePath spec = case spec of 
+                                          Nothing -> World (initBoard bDim bTarg) Black savePath
+                                          Just a -> World (board a) (turn a) (filePath a)
+
 data Bmps = Bmps { bl :: Picture,
                    wh :: Picture,
                    sq :: Picture }
+  deriving (Show, Generic)
 
-data World = World { bmps :: Bmps, 
-                     board :: Board,
-                     turn :: Col }
+-- instance FromJSON Bmps where
+--   -- parseJSON (Object v) = Bmps <$> v .: "bl" <*> v .: "wh" <*> v .: "sq"
+--   parseJSON _ = mzero
 
-initWorld bDim bTarg bmps = World bmps (initBoard bDim bTarg) Black
+-- instance ToJSON Bmps where
+--   toJSON (Bmps bl wh sq) = 
+--     object [ (fromString "bl") .= (circleSolid 0.5), (fromString "wh") .= (circleSolid 0.5), (fromString "sq") .= (circleSolid 0.5)]
+--   -- toJSON _ = mzero
 
+-- deriving instance Generic Picture
+-- instance FromJSON Picture
+-- instance ToJSON Picture
 -- Play a move on the board; return 'Nothing' if the move is invalid
 -- (e.g. outside the range of the board, or there is a piece already there)
 makeMove :: Board -> Col -> Position -> Maybe Board
--- TODO: Validate :
---                Invalid if position not in buttonLoci               :: trying to place something off the board
---                else Invalid if position in wPieces                 :: trying to place something where there is already a piece
---                else Invalid if position in bPieces                 :: trying to place something where there is already a piece
 makeMove oldBoard curTurn newPosition = do
   if not (newPosition `elem` (trace ("buttons: " ++ show (buttonLoci oldBoard)) (buttonLoci oldBoard)) ) then
     Nothing -- Position is not a valid board spot
@@ -115,7 +157,7 @@ hasWon board col =
       in if checkPos `elem` pieces
          then countLine checkPos (xoffset, yoffset) (count + 1)
          else count
-  in any (\pos -> any (shouldCheckLine pos) directions) (pieces)
+  in Prelude.any (\pos -> Prelude.any (shouldCheckLine pos) directions) (pieces)
 
 {-- 
  - Check world turn
@@ -130,7 +172,7 @@ undoTurn w = do
       let oBs = bPieces curBoard    
       let nBs = if (oBs == [])
                 then oBs
-                else init oBs
+                else Prelude.init oBs
       let nWs = wPieces curBoard    
       World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
 
@@ -138,9 +180,11 @@ undoTurn w = do
       let oWs = wPieces curBoard    
       let nWs = if (oWs == [])
                 then oWs
-                else init oWs
+                else Prelude.init oWs
       let nBs = bPieces curBoard    
-      World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w)
+
+      World ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (other $ turn w) (filePath w)
+
 
 togglePause :: World -> World
 togglePause w = do
@@ -158,19 +202,19 @@ undoRound :: World -> World
 undoRound w = do 
   {-- 
   - remove latest from both
-  - so, newBs = init Bs
-       newWs = init Ws
+  - so, newBs = Prelude.init Bs
+       newWs = Prelude.init Ws
   --}
   let curBoard = board w
   let oBs = bPieces curBoard
   let oWs = wPieces curBoard
   let nBs = if (oBs == [])
                then oBs
-               else init oBs 
+               else Prelude.init oBs 
    
   let nWs = if (oWs == [])
                then oWs
-               else init oWs 
+               else Prelude.init oWs 
 
   World (bmps w) ( Board (tileSize curBoard) (size curBoard) (target curBoard) (turnStartTime curBoard) (turnStartTime curBoard) (paused curBoard) (buttonLoci curBoard) (nWs) (nBs) ) (turn w) -- TODO set current and paused time to current time - 10 for fair replay
 
@@ -182,11 +226,22 @@ For every position ((x, y), col) in the 'pieces' list:
   n-1 in a row.
 -}
 
+writeWorldToJSON :: FilePath -> World -> IO ()
+writeWorldToJSON path world = B.writeFile path (encode world)
+
+saveWorld w filePath = do
+  if filePath == "!!none!!"
+    then error "Malformed file path provided, please do not use reserved keyword '!!none!!'"
+    else do
+      writeWorldToJSON filePath w
+  
 -- An evaluation function for a minimax search. Given a board and a colour
 -- return an integer indicating how good the board is for that colour.
 evaluate :: Board -> Col -> Int
-evaluate board col
-  | won == Just col = 1
-  | won == Just (other col) = -1
-  | otherwise = 0
-  where won = checkWon board
+evaluate board col = do-- 2 for won, 0 for lost, 1 for still deciding
+  case checkWon board of
+    Nothing -> 10
+    Just col' -> if col' == col then 20 else 0
+
+evalTie :: Board -> Col -> Int
+evalTie board col = undefined

@@ -11,7 +11,9 @@ cabal-version:       >=1.10
 
 executable gomoku
   main-is:             Main.hs
+
   Other-modules:       Board, Input, Draw, AI, Lists
-  build-depends:       base, gloss, containers, optparse-applicative, aeson, time
+  build-depends:       base, gloss, containers, optparse-applicative, aeson, directory, text, bytestring, time
+  
   hs-source-dirs:      src
   default-language:    Haskell2010

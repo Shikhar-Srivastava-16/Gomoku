@@ -7,6 +7,10 @@ import Data.Time.Clock (getCurrentTime, diffUTCTime)
 import qualified Data.Time.Clock as Clock
 import System.IO.Unsafe
 
+import Data.List (maximumBy, minimumBy)
+import Data.Ord (comparing)
+
+
 data GameTree = GameTree { game_board :: Board,
                            game_turn :: Col,
                            next_moves :: [(Position, GameTree)] }
@@ -60,7 +64,15 @@ buildTree gen b c = let moves = gen b c in -- generated moves
 getBestMove :: Int -- ^ Maximum search depth
                -> GameTree -- ^ Initial game tree
                -> Position
-getBestMove depth tree = (125.0, 125.0)
+getBestMove depth tree = snd (minimax depth tree)
+
+minimax :: Int -> GameTree -> (Int, Position)
+minimax depth (GameTree board playerTurn possibleMoves)
+  | depth <= 0 || null possibleMoves = (evaluate board playerTurn, (-1,-1))
+  |  playerTurn == Black = maximumBy (comparing fst) evalSubPositions
+  | otherwise = minimumBy (comparing fst) evalSubPositions
+  where 
+    evalSubPositions = [ (fst (minimax (depth - 1) subtree), pos) | (pos, subtree) <- possibleMoves]
 
 -- -- Update the world state after some time has passed
 -- updateWorld :: Float -- ^ time since last update (you can ignore this)
