@@ -19,7 +19,6 @@ import Board
 import Draw
 import Input
 import AI
-import Parsing
 
 -- 'play' starts up a graphics window and sets up handlers for dealing
 -- with inputs and updating the world state.

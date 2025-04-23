@@ -1,6 +1,5 @@
 module AI where
 
-import Lists
 import Board
 import Debug.Trace
 import Data.Time.Clock (getCurrentTime, diffUTCTime)
